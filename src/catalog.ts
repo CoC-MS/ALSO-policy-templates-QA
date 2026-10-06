@@ -104,3 +104,12 @@ export function getPlatform(platformId: Platform["id"]): Platform {
   }
   return platform;
 }
+
+export function togglePlatformSelection(
+  selected: readonly Platform[],
+  platform: Platform,
+): Platform[] {
+  return selected.some((item) => item.id === platform.id)
+    ? selected.filter((item) => item.id !== platform.id)
+    : [...selected, platform];
+}

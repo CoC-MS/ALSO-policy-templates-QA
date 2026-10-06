@@ -3,6 +3,7 @@ import {
   getPlatform,
   licenses,
   platforms,
+  togglePlatformSelection,
   type License,
   type Platform,
 } from "./catalog";
@@ -42,7 +43,7 @@ function StepIndicator({ step }: { step: Step }) {
 function App() {
   const [step, setStep] = useState<Step>("license");
   const [selectedLicense, setSelectedLicense] = useState<License>();
-  const [selectedPlatform, setSelectedPlatform] = useState<Platform>();
+  const [selectedPlatforms, setSelectedPlatforms] = useState<Platform[]>([]);
 
   useEffect(() => {
     document.getElementById("main-title")?.focus();
@@ -50,18 +51,19 @@ function App() {
 
   function chooseLicense(license: License) {
     setSelectedLicense(license);
-    setSelectedPlatform(undefined);
+    setSelectedPlatforms([]);
     setStep(license.eligible ? "platform" : "blocked");
   }
 
-  function choosePlatform(platform: Platform) {
-    setSelectedPlatform(getPlatform(platform.id));
-    setStep("result");
+  function togglePlatform(platform: Platform) {
+    setSelectedPlatforms((current) =>
+      togglePlatformSelection(current, getPlatform(platform.id)),
+    );
   }
 
   function startOver() {
     setSelectedLicense(undefined);
-    setSelectedPlatform(undefined);
+    setSelectedPlatforms([]);
     setStep("license");
   }
 
@@ -101,20 +103,41 @@ function App() {
           {step === "platform" && selectedLicense && (
             <section aria-labelledby="main-title">
               <div className="selection-pill"><span aria-hidden="true">&#10003;</span>{selectedLicense.name}</div>
-              <h1 id="main-title" tabIndex={-1}>Which platform or solution do you need security templates for?</h1>
-              <p className="intro">Choose a platform to open the verified public repository with the relevant policy templates and guidance.</p>
+              <h1 id="main-title" tabIndex={-1}>Which platforms or solutions do you need security templates for?</h1>
+              <p className="intro">Select one or more platforms, then continue to see every relevant policy template repository.</p>
               <div className="card-grid platform-grid" aria-label="Platforms and solutions">
-                {platforms.map((platform) => (
-                  <button className="choice-card platform-card" type="button" key={platform.id} onClick={() => choosePlatform(platform)}>
-                    <span className="choice-icon" aria-hidden="true">{platform.shortLabel}</span>
-                    <span className="choice-name">{platform.name}</span>
-                    <span className="choice-arrow" aria-hidden="true">&rarr;</span>
-                  </button>
-                ))}
+                {platforms.map((platform) => {
+                  const isSelected = selectedPlatforms.some((item) => item.id === platform.id);
+                  return (
+                    <button
+                      className={`choice-card platform-card ${isSelected ? "selected" : ""}`}
+                      type="button"
+                      key={platform.id}
+                      aria-pressed={isSelected}
+                      onClick={() => togglePlatform(platform)}
+                    >
+                      <span className="choice-icon" aria-hidden="true">{platform.shortLabel}</span>
+                      <span className="choice-name">{platform.name}</span>
+                      <span className="choice-check" aria-hidden="true">{isSelected ? "\u2713" : ""}</span>
+                    </button>
+                  );
+                })}
               </div>
-              <div className="actions">
-                <button className="button secondary" type="button" onClick={() => setStep("license")}>&larr; Back</button>
-                <button className="button text-button" type="button" onClick={startOver}>Start over</button>
+              <div className="actions platform-actions">
+                <div>
+                  <button className="button secondary" type="button" onClick={() => setStep("license")}>&larr; Back</button>
+                  <button className="button text-button" type="button" onClick={startOver}>Start over</button>
+                </div>
+                <button
+                  className="button primary"
+                  type="button"
+                  disabled={selectedPlatforms.length === 0}
+                  onClick={() => setStep("result")}
+                >
+                  {selectedPlatforms.length === 0
+                    ? "Select at least one platform"
+                    : `View ${selectedPlatforms.length} recommendation${selectedPlatforms.length === 1 ? "" : "s"}`} &rarr;
+                </button>
               </div>
             </section>
           )}
@@ -132,26 +155,25 @@ function App() {
             </section>
           )}
 
-          {step === "result" && selectedLicense && selectedPlatform && (
+          {step === "result" && selectedLicense && selectedPlatforms.length > 0 && (
             <section className="result-wrap" aria-labelledby="main-title">
-              <div className="result-card">
+              <div className="result-heading">
                 <div className="result-icon" aria-hidden="true">&#10003;</div>
-                <div className="eyebrow">Recommended repository</div>
-                <h1 id="main-title" tabIndex={-1}>{selectedPlatform.name} security templates</h1>
-                <p>{selectedPlatform.description}</p>
-                <dl className="summary">
-                  <div>
-                    <dt>Your license</dt>
-                    <dd>{selectedLicense.name}</dd>
-                  </div>
-                  <div>
-                    <dt>Platform</dt>
-                    <dd>{selectedPlatform.name}</dd>
-                  </div>
-                </dl>
-                <a className="button primary repository-link" href={selectedPlatform.repository} target="_blank" rel="noopener noreferrer">
-                  Open template repository <ArrowIcon />
-                </a>
+                <div className="eyebrow">Recommended repositories</div>
+                <h1 id="main-title" tabIndex={-1}>Your security template repositories</h1>
+                <p>Based on <strong>{selectedLicense.name}</strong>, here are the repositories for your {selectedPlatforms.length} selected {selectedPlatforms.length === 1 ? "platform" : "platforms"}.</p>
+              </div>
+              <div className="recommendation-grid">
+                {selectedPlatforms.map((platform) => (
+                  <article className="recommendation-card" key={platform.id}>
+                    <span className="choice-icon" aria-hidden="true">{platform.shortLabel}</span>
+                    <h2>{platform.name}</h2>
+                    <p>{platform.description}</p>
+                    <a className="button primary repository-link" href={platform.repository} target="_blank" rel="noopener noreferrer">
+                      Open {platform.name} repository <ArrowIcon />
+                    </a>
+                  </article>
+                ))}
               </div>
               <div className="actions centered">
                 <button className="button secondary" type="button" onClick={() => setStep("platform")}>&larr; Back</button>

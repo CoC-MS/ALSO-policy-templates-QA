@@ -224,6 +224,30 @@ h1 {
   transform: translateY(-2px);
 }
 
+.choice-card.selected {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+  box-shadow: 0 0 0 1px var(--primary);
+}
+
+.choice-check {
+  display: grid;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  color: transparent;
+  font-size: 0.85rem;
+  font-weight: 800;
+  place-items: center;
+}
+
+.choice-card.selected .choice-check {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: #fff;
+}
+
 .choice-icon {
   display: grid;
   width: 2.75rem;
@@ -274,6 +298,18 @@ h1 {
   justify-content: center;
 }
 
+.platform-actions {
+  max-width: 850px;
+  margin-right: auto;
+  margin-left: auto;
+  justify-content: space-between;
+}
+
+.platform-actions > div {
+  display: flex;
+  gap: 0.75rem;
+}
+
 .button {
   display: inline-flex;
   min-height: 2.8rem;
@@ -299,6 +335,13 @@ h1 {
   background: var(--primary-hover);
 }
 
+.button:disabled {
+  border-color: var(--border);
+  background: var(--border);
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
 .button.secondary {
   border-color: var(--border);
   background: var(--surface);
@@ -320,6 +363,50 @@ h1 {
 
 .result-wrap {
   padding-top: 2.5rem;
+}
+
+.result-heading {
+  max-width: 720px;
+  margin: 0 auto 2.5rem;
+  text-align: center;
+}
+
+.result-heading > p {
+  color: var(--text-muted);
+  line-height: 1.7;
+}
+
+.recommendation-grid {
+  display: grid;
+  max-width: 900px;
+  margin: 0 auto;
+  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.recommendation-card {
+  display: flex;
+  padding: 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  flex-direction: column;
+}
+
+.recommendation-card h2 {
+  margin: 1rem 0 0.5rem;
+  font-size: 1.25rem;
+}
+
+.recommendation-card p {
+  margin: 0 0 1.5rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.recommendation-card .repository-link {
+  margin-top: auto;
 }
 
 .result-card {
@@ -470,6 +557,18 @@ footer p {
 
   .actions {
     justify-content: center;
+  }
+
+  .platform-actions {
+    flex-direction: column;
+  }
+
+  .platform-actions > div {
+    justify-content: center;
+  }
+
+  .recommendation-grid {
+    grid-template-columns: 1fr;
   }
 }
 
