@@ -20,7 +20,7 @@ describe("license eligibility", () => {
       "business-basic",
       "business-standard",
     ]);
-    expect(licenses.filter((license) => isLicenseEligible(license.id))).toHaveLength(14);
+    expect(licenses.filter((license) => isLicenseEligible(license.id))).toHaveLength(16);
   });
 
   it("groups all Business plans under SMB", () => {
@@ -32,7 +32,7 @@ describe("license eligibility", () => {
       "business-premium-purview",
       "business-premium-defender-purview",
     ]);
-    expect(enterpriseLicenses).toHaveLength(10);
+    expect(enterpriseLicenses).toHaveLength(12);
     expect(
       new Set([...enterpriseLicenses, ...smbLicenses].map((license) => license.id)),
     ).toEqual(new Set(licenses.map((license) => license.id)));
@@ -97,10 +97,12 @@ describe("Agent 365 prerequisite note", () => {
   const eligibleLicenses = [
     "e5",
     "e7",
+    "a3-defender-purview",
     "a5",
     "g5",
     "business-premium-defender",
     "e3-defender",
+    "e3-defender-purview",
   ] as const;
 
   it("makes Agent Security available only for supported licenses", () => {

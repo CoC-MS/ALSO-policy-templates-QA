@@ -6,6 +6,8 @@ export const licenses = [
   { id: "e5", name: "Microsoft 365 E5", eligible: true },
   { id: "e7", name: "Microsoft 365 E7", eligible: true },
   { id: "a3", name: "Microsoft 365 A3", eligible: true },
+  { id: "a3-defender", name: "Microsoft 365 A3 + Defender Suite", eligible: true },
+  { id: "a3-defender-purview", name: "Microsoft 365 A3 + Defender and Purview Suite", eligible: true },
   { id: "a5", name: "Microsoft 365 A5", eligible: true },
   { id: "g3", name: "Microsoft 365 G3", eligible: true },
   { id: "g5", name: "Microsoft 365 G5", eligible: true },
@@ -174,8 +176,10 @@ export function requiresAgent365Note(
 const agentSecurityLicenseIds = new Set<License["id"]>([
   "business-premium-defender",
   "e3-defender",
+  "e3-defender-purview",
   "e5",
   "g5",
+  "a3-defender-purview",
   "a5",
   "e7",
 ]);
