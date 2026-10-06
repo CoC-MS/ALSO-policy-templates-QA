@@ -62,6 +62,24 @@ describe("platform repository routing", () => {
     expect(new Set(platforms.map((platform) => platform.id)).size).toBe(platforms.length);
   });
 
+  it("uses repository About descriptions for platform copy", () => {
+    expect(getPlatform("windows-11").description).toBe(
+      "All policies belonging to Windows",
+    );
+    expect(getPlatform("windows-servers").description).toContain(
+      "A collection of Microsoft Security Windows Server policies",
+    );
+    expect(getPlatform("conditional-access").description).toContain(
+      "A collection of Microsoft Entra Conditional Access policy templates",
+    );
+    expect(getPlatform("android").description).toBe(
+      "All about managing android",
+    );
+    expect(getPlatform("purview").description).toBe(
+      "No repository description is currently provided in GitHub About.",
+    );
+  });
+
   it("routes Agent Security to Conditional Access and AI Security Windows 11", () => {
     expect(getPlatformRepositories(getPlatform("agent-security"))).toEqual([
       {
