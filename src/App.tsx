@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import {
   getPlatform,
   getAgentSecurityLicenseNoteForLicenses,
+  getPlatformLicenseNoteForLicenses,
   enterpriseLicenses,
   platforms,
   smbLicenses,
@@ -250,6 +251,10 @@ function App() {
                     eligibleLicenseIds,
                     platform.id,
                   );
+                  const platformLicenseNote = getPlatformLicenseNoteForLicenses(
+                    eligibleLicenseIds,
+                    platform.id,
+                  );
                   const windowsServerNotes =
                     platform.id === "windows-servers"
                       ? getWindowsServerLicenseNotes(eligibleLicenseIds)
@@ -270,6 +275,12 @@ function App() {
                         <aside className="license-requirement-note">
                           <strong>{agentLicenseNote.title}</strong>
                           <p>{agentLicenseNote.message}</p>
+                        </aside>
+                      )}
+                      {platformLicenseNote && (
+                        <aside className="license-requirement-note">
+                          <strong>{platformLicenseNote.title}</strong>
+                          <p>{platformLicenseNote.message}</p>
                         </aside>
                       )}
                       {requiresLinuxDesktopLicenseNoteForLicenses(eligibleLicenseIds, platform.id) && (

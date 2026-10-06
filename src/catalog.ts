@@ -12,6 +12,12 @@ export const licenses = [
   { id: "g3", name: "Microsoft 365 G3", eligible: true },
   { id: "g5", name: "Microsoft 365 G5", eligible: true },
   { id: "g7", name: "Microsoft 365 G7", eligible: true },
+  { id: "f1", name: "Microsoft 365 F1", eligible: true },
+  { id: "f3", name: "Microsoft 365 F3", eligible: true },
+  { id: "f1-defender", name: "Microsoft 365 F1 + Defender Suite FLW", eligible: true },
+  { id: "f1-defender-purview", name: "Microsoft 365 F1 + Defender and Purview Suite FLW", eligible: true },
+  { id: "f3-defender", name: "Microsoft 365 F3 + Defender Suite FLW", eligible: true },
+  { id: "f3-defender-purview", name: "Microsoft 365 F3 + Defender and Purview Suite FLW", eligible: true },
   { id: "business-premium-defender", name: "Microsoft 365 Business Premium + Defender Suite", eligible: true },
   { id: "business-premium-purview", name: "Microsoft 365 Business Premium + Purview Suite", eligible: true },
   { id: "business-premium-defender-purview", name: "Microsoft 365 Business Premium + Defender and Purview Suite", eligible: true },
@@ -223,6 +229,10 @@ const linuxDesktopIncludedLicenseIds = new Set<License["id"]>([
   "business-premium-defender-purview",
   "e3-defender",
   "e3-defender-purview",
+  "f1-defender",
+  "f1-defender-purview",
+  "f3-defender",
+  "f3-defender-purview",
 ]);
 
 export function requiresLinuxDesktopLicenseNote(
@@ -253,6 +263,13 @@ const agentSecurityLicenseIds = new Set<License["id"]>([
   "a5",
   "e7",
   "g7",
+  "f1-defender-purview",
+  "f3-defender-purview",
+]);
+
+const purviewUnavailableLicenseIds = new Set<License["id"]>([
+  "f1",
+  "f1-defender",
 ]);
 
 export function isPlatformAvailableForLicense(
@@ -266,10 +283,90 @@ export function isPlatformAvailableForLicenses(
   licenseIds: readonly License["id"][],
   platformId: Platform["id"],
 ): boolean {
-  return (
-    platformId !== "agent-security" ||
-    licenseIds.some((licenseId) => agentSecurityLicenseIds.has(licenseId))
-  );
+  if (platformId === "agent-security") {
+    return licenseIds.some((licenseId) => agentSecurityLicenseIds.has(licenseId));
+  }
+
+  if (platformId === "purview") {
+    return licenseIds.some(
+      (licenseId) => !purviewUnavailableLicenseIds.has(licenseId),
+    );
+  }
+
+  return true;
+}
+
+const frontlineLicenseIds = new Set<License["id"]>([
+  "f1",
+  "f3",
+  "f1-defender",
+  "f1-defender-purview",
+  "f3-defender",
+  "f3-defender-purview",
+]);
+
+const limitedEndpointLicenseIds = new Set<License["id"]>(["f1", "f3"]);
+
+const limitedPurviewLicenseIds = new Set<License["id"]>([
+  "business-premium",
+  "business-premium-defender",
+  "e3",
+  "e3-defender",
+  "f3",
+  "f3-defender",
+]);
+
+const endpointPlatformIds = new Set<Platform["id"]>([
+  "windows-11",
+  "macos",
+  "ios-ipados",
+  "android",
+]);
+
+export function getPlatformLicenseNoteForLicenses(
+  licenseIds: readonly License["id"][],
+  platformId: Platform["id"],
+): { title: string; message: string } | undefined {
+  if (
+    platformId === "conditional-access" &&
+    licenseIds.length > 0 &&
+    licenseIds.every((licenseId) => frontlineLicenseIds.has(licenseId))
+  ) {
+    return {
+      title: "Limited Conditional Access experience",
+      message: "Microsoft 365 F1 and F3 licenses support a limited set of Conditional Access capabilities. Some policy templates may require additional Microsoft Entra ID licensing.",
+    };
+  }
+
+  if (platformId === "purview") {
+    const purviewLicenseIds = licenseIds.filter(
+      (licenseId) => !purviewUnavailableLicenseIds.has(licenseId),
+    );
+    if (
+      purviewLicenseIds.length > 0 &&
+      purviewLicenseIds.every((licenseId) =>
+        limitedPurviewLicenseIds.has(licenseId),
+      )
+    ) {
+      return {
+        title: "Limited Microsoft Purview experience",
+        message: "Microsoft 365 Business Premium, E3, and F3 provide a limited Microsoft Purview experience. Some policy templates require additional Microsoft Purview licensing.",
+      };
+    }
+  }
+
+  if (
+    endpointPlatformIds.has(platformId) &&
+    licenseIds.length > 0 &&
+    licenseIds.every((licenseId) => limitedEndpointLicenseIds.has(licenseId))
+  ) {
+    return {
+      title: "Limited endpoint policy coverage",
+      message: "Microsoft 365 F1 and F3 support Windows, macOS, iOS/iPadOS, and Android policy templates that do not require Microsoft Defender for Endpoint. Policies that require Defender for Endpoint need an additional eligible license.",
+    };
+  }
+
+  return undefined;
 }
 
 const businessPremiumLicenseIds = new Set<License["id"]>([
@@ -287,6 +384,12 @@ const enterpriseServerLicenseIds = new Set<License["id"]>([
   "e5",
   "e7",
   "g7",
+  "f1",
+  "f3",
+  "f1-defender",
+  "f1-defender-purview",
+  "f3-defender",
+  "f3-defender-purview",
 ]);
 
 export function getWindowsServerLicenseNote(

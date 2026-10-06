@@ -4,6 +4,7 @@ import {
   getAgentSecurityLicenseNote,
   getAgentSecurityLicenseNoteForLicenses,
   enterpriseLicenses,
+  getPlatformLicenseNoteForLicenses,
   getPlatformRepositories,
   getWindowsServerLicenseNote,
   getWindowsServerLicenseNotes,
@@ -28,7 +29,7 @@ describe("license eligibility", () => {
       "business-basic",
       "business-standard",
     ]);
-    expect(licenses.filter((license) => isLicenseEligible(license.id))).toHaveLength(17);
+    expect(licenses.filter((license) => isLicenseEligible(license.id))).toHaveLength(23);
   });
 
   it("groups all Business plans under SMB", () => {
@@ -40,7 +41,7 @@ describe("license eligibility", () => {
       "business-premium-purview",
       "business-premium-defender-purview",
     ]);
-    expect(enterpriseLicenses).toHaveLength(13);
+    expect(enterpriseLicenses).toHaveLength(19);
     expect(
       new Set([...enterpriseLicenses, ...smbLicenses].map((license) => license.id)),
     ).toEqual(new Set(licenses.map((license) => license.id)));
@@ -153,6 +154,15 @@ describe("license selection", () => {
       );
     }
   });
+
+  it("limits Purview access for F1 while allowing F3", () => {
+    expect(isPlatformAvailableForLicense("f1", "purview")).toBe(false);
+    expect(isPlatformAvailableForLicense("f1-defender", "purview")).toBe(false);
+    expect(isPlatformAvailableForLicense("f3", "purview")).toBe(true);
+    expect(
+      isPlatformAvailableForLicense("f1-defender-purview", "purview"),
+    ).toBe(true);
+  });
 });
 
 describe("Agent 365 prerequisite note", () => {
@@ -163,6 +173,8 @@ describe("Agent 365 prerequisite note", () => {
     "a5",
     "g5",
     "g7",
+    "f1-defender-purview",
+    "f3-defender-purview",
     "business-premium-defender",
     "business-premium-defender-purview",
     "e3-defender",
@@ -190,6 +202,10 @@ describe("Agent 365 prerequisite note", () => {
       "business-premium-defender-purview",
       "e3-defender",
       "e3-defender-purview",
+      "f1-defender",
+      "f1-defender-purview",
+      "f3-defender",
+      "f3-defender-purview",
     ] as const)("does not show for %s because Defender for Endpoint is included", (licenseId) => {
       expect(requiresLinuxDesktopLicenseNote(licenseId, "linux-desktop")).toBe(false);
     });
@@ -203,6 +219,8 @@ describe("Agent 365 prerequisite note", () => {
       "a5",
       "g3",
       "g5",
+      "f1",
+      "f3",
     ] as const)("shows for %s because Defender for Endpoint Plan 2 is additional", (licenseId) => {
       expect(requiresLinuxDesktopLicenseNote(licenseId, "linux-desktop")).toBe(true);
     });
@@ -237,7 +255,7 @@ describe("Agent 365 prerequisite note", () => {
       );
     });
 
-    it("uses the Defender for Endpoint Server requirement for E3, E5, and E7 plans", () => {
+    it("uses the Defender for Endpoint Server requirement for enterprise and frontline plans", () => {
       expect(getWindowsServerLicenseNote("e3")).toContain(
         "Microsoft Defender for Endpoint Server",
       );
@@ -251,6 +269,12 @@ describe("Agent 365 prerequisite note", () => {
         "Microsoft Defender for Endpoint Server",
       );
       expect(getWindowsServerLicenseNote("g7")).toBe(
+        getWindowsServerLicenseNote("e7"),
+      );
+      expect(getWindowsServerLicenseNote("f1")).toBe(
+        getWindowsServerLicenseNote("e7"),
+      );
+      expect(getWindowsServerLicenseNote("f3-defender-purview")).toBe(
         getWindowsServerLicenseNote("e7"),
       );
     });
@@ -278,6 +302,63 @@ describe("Agent 365 prerequisite note", () => {
     expect(requiresAgent365Note("e7", "agent-security")).toBe(false);
     expect(requiresAgent365Note("g7", "agent-security")).toBe(false);
     expect(requiresAgent365Note("business-premium", "agent-security")).toBe(false);
+    expect(requiresAgent365Note("f1-defender", "agent-security")).toBe(false);
+    expect(
+      requiresAgent365Note("f1-defender-purview", "agent-security"),
+    ).toBe(true);
+  });
+
+  describe("frontline license guidance", () => {
+    it("shows limited Conditional Access guidance for frontline-only selections", () => {
+      expect(
+        getPlatformLicenseNoteForLicenses(
+          ["f1", "f3-defender-purview"],
+          "conditional-access",
+        )?.title,
+      ).toBe("Limited Conditional Access experience");
+      expect(
+        getPlatformLicenseNoteForLicenses(
+          ["f1", "e5"],
+          "conditional-access",
+        ),
+      ).toBeUndefined();
+    });
+
+    it("shows limited Purview guidance for Business Premium, E3, and F3", () => {
+      expect(
+        getPlatformLicenseNoteForLicenses(
+          ["business-premium", "e3", "f3"],
+          "purview",
+        )?.title,
+      ).toBe("Limited Microsoft Purview experience");
+      expect(
+        getPlatformLicenseNoteForLicenses(["f1", "e3"], "purview")?.title,
+      ).toBe("Limited Microsoft Purview experience");
+      expect(
+        getPlatformLicenseNoteForLicenses(
+          ["f3", "f3-defender-purview"],
+          "purview",
+        ),
+      ).toBeUndefined();
+    });
+
+    it.each(["windows-11", "macos", "ios-ipados", "android"] as const)(
+      "shows limited endpoint guidance for F1 and F3 on %s",
+      (platformId) => {
+        expect(
+          getPlatformLicenseNoteForLicenses(["f1", "f3"], platformId)?.title,
+        ).toBe("Limited endpoint policy coverage");
+      },
+    );
+
+    it("removes limited endpoint guidance when Defender Suite is selected", () => {
+      expect(
+        getPlatformLicenseNoteForLicenses(
+          ["f1", "f3-defender"],
+          "windows-11",
+        ),
+      ).toBeUndefined();
+    });
   });
 
   it("does not show for other platforms", () => {
