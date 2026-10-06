@@ -6,6 +6,7 @@ import {
   requiresAgent365Note,
   smbLicenses,
   getPlatformRepositories,
+  isPlatformAvailableForLicense,
   togglePlatformSelection,
   type License,
   type Platform,
@@ -128,22 +129,26 @@ function App() {
               <h1 id="main-title" tabIndex={-1}>Which platforms or solutions do you need security templates for?</h1>
               <p className="intro">Select one or more platforms, then continue to see every relevant policy template repository.</p>
               <div className="card-grid platform-grid" aria-label="Platforms and solutions">
-                {platforms.map((platform) => {
-                  const isSelected = selectedPlatforms.some((item) => item.id === platform.id);
-                  return (
-                    <button
-                      className={`choice-card platform-card ${isSelected ? "selected" : ""}`}
-                      type="button"
-                      key={platform.id}
-                      aria-pressed={isSelected}
-                      onClick={() => togglePlatform(platform)}
-                    >
-                      <span className="choice-icon" aria-hidden="true">{platform.shortLabel}</span>
-                      <span className="choice-name">{platform.name}</span>
-                      <span className="choice-check" aria-hidden="true">{isSelected ? "\u2713" : ""}</span>
-                    </button>
-                  );
-                })}
+                {platforms
+                  .filter((platform) =>
+                    isPlatformAvailableForLicense(selectedLicense.id, platform.id),
+                  )
+                  .map((platform) => {
+                    const isSelected = selectedPlatforms.some((item) => item.id === platform.id);
+                    return (
+                      <button
+                        className={`choice-card platform-card ${isSelected ? "selected" : ""}`}
+                        type="button"
+                        key={platform.id}
+                        aria-pressed={isSelected}
+                        onClick={() => togglePlatform(platform)}
+                      >
+                        <span className="choice-icon" aria-hidden="true">{platform.shortLabel}</span>
+                        <span className="choice-name">{platform.name}</span>
+                        <span className="choice-check" aria-hidden="true">{isSelected ? "\u2713" : ""}</span>
+                      </button>
+                    );
+                  })}
               </div>
               <div className="actions platform-actions">
                 <div>

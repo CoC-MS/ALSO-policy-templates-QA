@@ -4,6 +4,7 @@ import {
   enterpriseLicenses,
   getPlatformRepositories,
   isLicenseEligible,
+  isPlatformAvailableForLicense,
   licenses,
   platforms,
   requiresAgent365Note,
@@ -93,10 +94,30 @@ describe("platform selection", () => {
 });
 
 describe("Agent 365 prerequisite note", () => {
-  it("shows for Agent Security on every license except E7", () => {
-    expect(requiresAgent365Note("business-premium", "agent-security")).toBe(true);
+  const eligibleLicenses = [
+    "e5",
+    "e7",
+    "a5",
+    "g5",
+    "business-premium-defender",
+    "e3-defender",
+  ] as const;
+
+  it("makes Agent Security available only for supported licenses", () => {
+    const available = licenses
+      .filter((license) =>
+        isPlatformAvailableForLicense(license.id, "agent-security"),
+      )
+      .map((license) => license.id);
+
+    expect(available).toEqual(eligibleLicenses);
+  });
+
+  it("shows for supported Agent Security licenses except E7", () => {
+    expect(requiresAgent365Note("business-premium-defender", "agent-security")).toBe(true);
     expect(requiresAgent365Note("e5", "agent-security")).toBe(true);
     expect(requiresAgent365Note("e7", "agent-security")).toBe(false);
+    expect(requiresAgent365Note("business-premium", "agent-security")).toBe(false);
   });
 
   it("does not show for other platforms", () => {

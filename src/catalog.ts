@@ -164,5 +164,28 @@ export function requiresAgent365Note(
   licenseId: License["id"],
   platformId: Platform["id"],
 ): boolean {
-  return platformId === "agent-security" && licenseId !== "e7";
+  return (
+    isPlatformAvailableForLicense(licenseId, platformId) &&
+    platformId === "agent-security" &&
+    licenseId !== "e7"
+  );
+}
+
+const agentSecurityLicenseIds = new Set<License["id"]>([
+  "business-premium-defender",
+  "e3-defender",
+  "e5",
+  "g5",
+  "a5",
+  "e7",
+]);
+
+export function isPlatformAvailableForLicense(
+  licenseId: License["id"],
+  platformId: Platform["id"],
+): boolean {
+  return (
+    platformId !== "agent-security" ||
+    agentSecurityLicenseIds.has(licenseId)
+  );
 }
