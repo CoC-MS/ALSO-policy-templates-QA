@@ -26,22 +26,42 @@ describe("license eligibility", () => {
     const ineligible = licenses.filter((license) => !isLicenseEligible(license.id));
 
     expect(ineligible.map((license) => license.id)).toEqual([
-      "business-basic",
       "business-standard",
+      "business-basic",
     ]);
     expect(licenses.filter((license) => isLicenseEligible(license.id))).toHaveLength(23);
   });
 
   it("groups all Business plans under SMB", () => {
     expect(smbLicenses.map((license) => license.id)).toEqual([
-      "business-basic",
-      "business-standard",
-      "business-premium",
+      "business-premium-defender-purview",
       "business-premium-defender",
       "business-premium-purview",
-      "business-premium-defender-purview",
+      "business-premium",
+      "business-standard",
+      "business-basic",
     ]);
-    expect(enterpriseLicenses).toHaveLength(19);
+    expect(enterpriseLicenses.map((license) => license.id)).toEqual([
+      "e7",
+      "g7",
+      "e5",
+      "g5",
+      "a5",
+      "e3",
+      "e3-defender",
+      "e3-purview",
+      "e3-defender-purview",
+      "a3",
+      "a3-defender",
+      "a3-defender-purview",
+      "g3",
+      "f3",
+      "f3-defender",
+      "f3-defender-purview",
+      "f1",
+      "f1-defender",
+      "f1-defender-purview",
+    ]);
     expect(
       new Set([...enterpriseLicenses, ...smbLicenses].map((license) => license.id)),
     ).toEqual(new Set(licenses.map((license) => license.id)));
@@ -206,18 +226,18 @@ describe("license selection", () => {
 
 describe("Agent 365 prerequisite note", () => {
   const eligibleLicenses = [
-    "e5",
     "e7",
-    "a3-defender-purview",
-    "a5",
-    "g5",
     "g7",
-    "f1-defender-purview",
-    "f3-defender-purview",
-    "business-premium-defender",
-    "business-premium-defender-purview",
+    "e5",
+    "g5",
+    "a5",
     "e3-defender",
     "e3-defender-purview",
+    "a3-defender-purview",
+    "f3-defender-purview",
+    "f1-defender-purview",
+    "business-premium-defender-purview",
+    "business-premium-defender",
   ] as const;
 
   it("makes Agent Security available only for supported licenses", () => {
