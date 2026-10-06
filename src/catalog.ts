@@ -5,13 +5,11 @@ export const licenses = [
   { id: "g5", name: "Microsoft 365 G5", eligible: true },
   { id: "a5", name: "Microsoft 365 A5", eligible: true },
   { id: "e3", name: "Microsoft 365 E3", eligible: true },
-  { id: "e3-defender", name: "Microsoft 365 E3 + Defender Suite", eligible: true },
-  { id: "e3-purview", name: "Microsoft 365 E3 + Purview Suite", eligible: true },
-  { id: "e3-defender-purview", name: "Microsoft 365 E3 + Defender and Purview Suite", eligible: true },
   { id: "a3", name: "Microsoft 365 A3", eligible: true },
-  { id: "a3-defender", name: "Microsoft 365 A3 + Defender Suite", eligible: true },
-  { id: "a3-defender-purview", name: "Microsoft 365 A3 + Defender and Purview Suite", eligible: true },
   { id: "g3", name: "Microsoft 365 G3", eligible: true },
+  { id: "eag3-defender", name: "Microsoft 365 E3/A3/G3 + Defender Suite", eligible: true },
+  { id: "eag3-purview", name: "Microsoft 365 E3/A3/G3 + Purview Suite", eligible: true },
+  { id: "eag3-defender-purview", name: "Microsoft 365 E3/A3/G3 + Defender and Purview Suite", eligible: true },
   { id: "f3", name: "Microsoft 365 F3", eligible: true },
   { id: "f3-defender", name: "Microsoft 365 F3 + Defender Suite FLW", eligible: true },
   { id: "f3-defender-purview", name: "Microsoft 365 F3 + Defender and Purview Suite FLW", eligible: true },
@@ -223,12 +221,10 @@ const linuxDesktopIncludedLicenseIds = new Set<License["id"]>([
   "e5",
   "e7",
   "g7",
-  "a3-defender",
-  "a3-defender-purview",
+  "eag3-defender",
+  "eag3-defender-purview",
   "business-premium-defender",
   "business-premium-defender-purview",
-  "e3-defender",
-  "e3-defender-purview",
   "f1-defender",
   "f1-defender-purview",
   "f3-defender",
@@ -255,11 +251,10 @@ export function requiresLinuxDesktopLicenseNoteForLicenses(
 const agentSecurityLicenseIds = new Set<License["id"]>([
   "business-premium-defender",
   "business-premium-defender-purview",
-  "e3-defender",
-  "e3-defender-purview",
+  "eag3-defender",
+  "eag3-defender-purview",
   "e5",
   "g5",
-  "a3-defender-purview",
   "a5",
   "e7",
   "g7",
@@ -272,7 +267,12 @@ const purviewUnavailableLicenseIds = new Set<License["id"]>([
   "f1-defender",
 ]);
 
-const purviewOnlyLicenseIds = new Set<License["id"]>(["e3", "a3", "g3"]);
+const purviewOnlyLicenseIds = new Set<License["id"]>([
+  "e3",
+  "a3",
+  "g3",
+  "eag3-purview",
+]);
 
 export function isPlatformAvailableForLicense(
   licenseId: License["id"],
@@ -326,9 +326,9 @@ const limitedPurviewLicenseIds = new Set<License["id"]>([
   "business-premium",
   "business-premium-defender",
   "e3",
-  "e3-defender",
   "a3",
   "g3",
+  "eag3-defender",
   "f3",
   "f3-defender",
 ]);
@@ -415,10 +415,8 @@ const businessPremiumLicenseIds = new Set<License["id"]>([
 ]);
 
 const enterpriseServerLicenseIds = new Set<License["id"]>([
-  "e3",
-  "e3-defender",
-  "e3-purview",
-  "e3-defender-purview",
+  "eag3-defender",
+  "eag3-defender-purview",
   "e5",
   "e7",
   "g7",

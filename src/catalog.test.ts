@@ -29,7 +29,7 @@ describe("license eligibility", () => {
       "business-standard",
       "business-basic",
     ]);
-    expect(licenses.filter((license) => isLicenseEligible(license.id))).toHaveLength(23);
+    expect(licenses.filter((license) => isLicenseEligible(license.id))).toHaveLength(21);
   });
 
   it("groups all Business plans under SMB", () => {
@@ -48,13 +48,11 @@ describe("license eligibility", () => {
       "g5",
       "a5",
       "e3",
-      "e3-defender",
-      "e3-purview",
-      "e3-defender-purview",
       "a3",
-      "a3-defender",
-      "a3-defender-purview",
       "g3",
+      "eag3-defender",
+      "eag3-purview",
+      "eag3-defender-purview",
       "f3",
       "f3-defender",
       "f3-defender-purview",
@@ -208,6 +206,19 @@ describe("license selection", () => {
     expect(available).toEqual(["purview"]);
   });
 
+  it("gives the shared E3/A3/G3 Purview Suite full Purview-only access", () => {
+    const available = platforms
+      .filter((platform) =>
+        isPlatformAvailableForLicense("eag3-purview", platform.id),
+      )
+      .map((platform) => platform.id);
+
+    expect(available).toEqual(["purview"]);
+    expect(
+      getPlatformLicenseNoteForLicenses(["eag3-purview"], "purview"),
+    ).toBeUndefined();
+  });
+
   it("combines E3 Purview access with another license's platform access", () => {
     expect(
       isPlatformAvailableForLicenses(["e3", "business-premium"], "windows-11"),
@@ -231,9 +242,8 @@ describe("Agent 365 prerequisite note", () => {
     "e5",
     "g5",
     "a5",
-    "e3-defender",
-    "e3-defender-purview",
-    "a3-defender-purview",
+    "eag3-defender",
+    "eag3-defender-purview",
     "f3-defender-purview",
     "f1-defender-purview",
     "business-premium-defender-purview",
@@ -255,12 +265,10 @@ describe("Agent 365 prerequisite note", () => {
       "e5",
       "e7",
       "g7",
-      "a3-defender",
-      "a3-defender-purview",
+      "eag3-defender",
+      "eag3-defender-purview",
       "business-premium-defender",
       "business-premium-defender-purview",
-      "e3-defender",
-      "e3-defender-purview",
       "f1-defender",
       "f1-defender-purview",
       "f3-defender",
@@ -273,7 +281,7 @@ describe("Agent 365 prerequisite note", () => {
       "business-premium",
       "business-premium-purview",
       "e3",
-      "e3-purview",
+      "eag3-purview",
       "a3",
       "a5",
       "g3",
@@ -315,10 +323,10 @@ describe("Agent 365 prerequisite note", () => {
     });
 
     it("uses the Defender for Endpoint Server requirement for enterprise and frontline plans", () => {
-      expect(getWindowsServerLicenseNote("e3")).toContain(
+      expect(getWindowsServerLicenseNote("eag3-defender")).toContain(
         "Microsoft Defender for Endpoint Server",
       );
-      expect(getWindowsServerLicenseNote("e3-defender-purview")).toContain(
+      expect(getWindowsServerLicenseNote("eag3-defender-purview")).toContain(
         "Microsoft Defender for Servers Plan 1 or Plan 2",
       );
       expect(getWindowsServerLicenseNote("e5")).toContain(
