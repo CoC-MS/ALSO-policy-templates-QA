@@ -16,21 +16,6 @@
   --focus: #0284c7;
 }
 
-:root[data-theme="dark"] {
-  color: #f1f5f9;
-  background: #0c1218;
-  --primary: hsl(108.3 71.95% 67.84%);
-  --primary-hover: hsl(108.3 71.95% 61%);
-  --primary-soft: hsl(108.3 35% 14%);
-  --surface: #121b24;
-  --surface-muted: #17212b;
-  --border: #2d3a48;
-  --text: #f1f5f9;
-  --text-muted: #a9b5c4;
-  --shadow: 0 12px 36px rgb(0 0 0 / 25%);
-  --focus: hsl(108.3 71.95% 67.84%);
-}
-
 * {
   box-sizing: border-box;
 }
@@ -41,10 +26,6 @@ html {
   color-scheme: light;
 }
 
-html[data-theme="dark"] {
-  color-scheme: dark;
-}
-
 body {
   margin: 0;
   min-width: 320px;
@@ -53,12 +34,6 @@ body {
     radial-gradient(circle at 50% -15%, color-mix(in srgb, var(--primary) 9%, transparent), transparent 37rem),
     #f5f7fa;
   color: var(--text);
-}
-
-[data-theme="dark"] body {
-  background:
-    radial-gradient(circle at 50% -15%, color-mix(in srgb, var(--primary) 8%, transparent), transparent 37rem),
-    #0c1218;
 }
 
 button,
@@ -113,11 +88,10 @@ h1:focus-visible {
   text-decoration: none;
 }
 
-.brand-mark {
-  color: var(--primary);
-  font-size: 1.45rem;
-  font-weight: 800;
-  letter-spacing: 0.06em;
+.brand-logo {
+  display: block;
+  width: 7rem;
+  height: auto;
 }
 
 .brand-divider {
@@ -130,22 +104,6 @@ h1:focus-visible {
 .brand-product {
   font-size: 0.95rem;
   font-weight: 600;
-}
-
-.icon-button {
-  display: grid;
-  width: 2.5rem;
-  height: 2.5rem;
-  padding: 0;
-  border: 1px solid var(--border);
-  border-radius: 0.5rem;
-  background: var(--surface);
-  cursor: pointer;
-  place-items: center;
-}
-
-.icon-button:hover {
-  background: var(--surface-muted);
 }
 
 main {
@@ -192,10 +150,6 @@ main {
   border-color: var(--primary);
   background: var(--primary);
   color: #fff;
-}
-
-[data-theme="dark"] .step-item.active span {
-  color: #102013;
 }
 
 .step-line {
@@ -338,10 +292,6 @@ h1 {
   border-color: var(--primary);
   background: var(--primary);
   color: #fff;
-}
-
-[data-theme="dark"] .button.primary {
-  color: #102013;
 }
 
 .button.primary:hover {

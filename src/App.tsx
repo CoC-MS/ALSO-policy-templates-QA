@@ -8,25 +8,11 @@ import {
 } from "./catalog";
 
 type Step = "license" | "platform" | "blocked" | "result";
-type Theme = "light" | "dark";
 
 function ArrowIcon() {
   return (
     <svg aria-hidden="true" viewBox="0 0 20 20" width="18" height="18">
       <path d="M7 4h9v9M16 4 5 15M4 7v9h9" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
-    </svg>
-  );
-}
-
-function ThemeIcon({ theme }: { theme: Theme }) {
-  return theme === "light" ? (
-    <svg aria-hidden="true" viewBox="0 0 24 24" width="20" height="20">
-      <path d="M20.5 14.1A8.5 8.5 0 0 1 9.9 3.5 8.5 8.5 0 1 0 20.5 14.1Z" fill="none" stroke="currentColor" strokeWidth="1.8" />
-    </svg>
-  ) : (
-    <svg aria-hidden="true" viewBox="0 0 24 24" width="20" height="20">
-      <circle cx="12" cy="12" r="3.5" fill="none" stroke="currentColor" strokeWidth="1.8" />
-      <path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
     </svg>
   );
 }
@@ -54,15 +40,9 @@ function StepIndicator({ step }: { step: Step }) {
 }
 
 function App() {
-  const preferredDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-  const [theme, setTheme] = useState<Theme>(preferredDark ? "dark" : "light");
   const [step, setStep] = useState<Step>("license");
   const [selectedLicense, setSelectedLicense] = useState<License>();
   const [selectedPlatform, setSelectedPlatform] = useState<Platform>();
-
-  useEffect(() => {
-    document.documentElement.dataset.theme = theme;
-  }, [theme]);
 
   useEffect(() => {
     document.getElementById("main-title")?.focus();
@@ -90,18 +70,10 @@ function App() {
       <header className="site-header">
         <div className="header-inner">
           <a className="brand" href={import.meta.env.BASE_URL} aria-label="ALSO Policy Templates Guide home">
-            <span className="brand-mark">ALSO</span>
+            <img className="brand-logo" src={`${import.meta.env.BASE_URL}also-logo.png`} alt="ALSO" />
             <span className="brand-divider" aria-hidden="true" />
             <span className="brand-product">Policy Templates Guide</span>
           </a>
-          <button
-            className="icon-button"
-            type="button"
-            onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-            aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
-          >
-            <ThemeIcon theme={theme} />
-          </button>
         </div>
       </header>
 
@@ -191,7 +163,7 @@ function App() {
       </main>
 
       <footer>
-        <p>ALSO Microsoft Security &middot; No data is collected or stored</p>
+        <p>ALSO Microsoft Security Central Technical Team (c) 2026 All rights reserved</p>
       </footer>
     </div>
   );
