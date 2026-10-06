@@ -51,7 +51,7 @@ export const platforms = [
   },
   {
     id: "ai-security",
-    name: "AI Security",
+    name: "AI Security Windows 11",
     shortLabel: "AI",
     repository: "https://github.com/CoC-MS/ALSO-Microsoft-Security-AI-Security-Windows11",
     description: "Controls and policy guidance for securing AI use on Windows 11.",
@@ -60,8 +60,15 @@ export const platforms = [
     id: "agent-security",
     name: "Agent Security",
     shortLabel: "AG",
-    repository: "https://github.com/CoC-MS/ALSO-Microsoft-Security-AI-Security-Windows11",
-    description: "Security guidance for AI agents and their Windows 11 operating environment.",
+    repository: "https://github.com/CoC-MS/ALSO-Microsoft-Security-Conditional-Access",
+    repositoryLabel: "Conditional Access",
+    additionalRepositories: [
+      {
+        name: "AI Security Windows 11",
+        url: "https://github.com/CoC-MS/ALSO-Microsoft-Security-AI-Security-Windows11",
+      },
+    ],
+    description: "Conditional Access and Windows 11 security guidance for protecting AI agent access and operating environments.",
   },
   {
     id: "linux-desktop",
@@ -120,6 +127,21 @@ export function getPlatform(platformId: Platform["id"]): Platform {
     throw new Error(`Unknown platform: ${platformId}`);
   }
   return platform;
+}
+
+export function getPlatformRepositories(
+  platform: Platform,
+): Array<{ name: string; url: string }> {
+  const repositories = [
+    {
+      name: "repositoryLabel" in platform ? platform.repositoryLabel : platform.name,
+      url: platform.repository,
+    },
+  ];
+
+  return "additionalRepositories" in platform
+    ? [...repositories, ...platform.additionalRepositories]
+    : repositories;
 }
 
 export function togglePlatformSelection(

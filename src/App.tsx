@@ -4,6 +4,7 @@ import {
   enterpriseLicenses,
   platforms,
   smbLicenses,
+  getPlatformRepositories,
   togglePlatformSelection,
   type License,
   type Platform,
@@ -189,9 +190,19 @@ function App() {
                     <span className="choice-icon" aria-hidden="true">{platform.shortLabel}</span>
                     <h2>{platform.name}</h2>
                     <p>{platform.description}</p>
-                    <a className="button primary repository-link" href={platform.repository} target="_blank" rel="noopener noreferrer">
-                      Open {platform.name} repository <ArrowIcon />
-                    </a>
+                    <div className="repository-links">
+                      {getPlatformRepositories(platform).map((repository) => (
+                        <a
+                          className="button primary repository-link"
+                          href={repository.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          key={repository.url}
+                        >
+                          Open {repository.name} repository <ArrowIcon />
+                        </a>
+                      ))}
+                    </div>
                   </article>
                 ))}
               </div>

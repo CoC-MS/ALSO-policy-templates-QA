@@ -421,6 +421,12 @@ h1 {
   margin-top: auto;
 }
 
+.repository-links {
+  display: grid;
+  margin-top: auto;
+  gap: 0.65rem;
+}
+
 .result-card {
   max-width: 680px;
   margin: 0 auto;

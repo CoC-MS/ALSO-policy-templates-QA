@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   getPlatform,
   enterpriseLicenses,
+  getPlatformRepositories,
   isLicenseEligible,
   licenses,
   platforms,
@@ -41,7 +42,7 @@ describe("platform repository routing", () => {
     ["windows-11", "https://github.com/CoC-MS/security-template"],
     ["windows-servers", "https://github.com/CoC-MS/ALSO-Microsoft-Security-WindowsServer"],
     ["ai-security", "https://github.com/CoC-MS/ALSO-Microsoft-Security-AI-Security-Windows11"],
-    ["agent-security", "https://github.com/CoC-MS/ALSO-Microsoft-Security-AI-Security-Windows11"],
+    ["agent-security", "https://github.com/CoC-MS/ALSO-Microsoft-Security-Conditional-Access"],
     ["linux-desktop", "https://github.com/CoC-MS/ALSO-Microsoft-Security-Linux"],
     ["linux-server", "https://github.com/CoC-MS/ALSO-Microsoft-Security-Linux"],
     ["macos", "https://github.com/CoC-MS/ALSO-Microsoft-Security-MacOS"],
@@ -55,6 +56,19 @@ describe("platform repository routing", () => {
   it("contains one route for every displayed platform", () => {
     expect(platforms).toHaveLength(10);
     expect(new Set(platforms.map((platform) => platform.id)).size).toBe(platforms.length);
+  });
+
+  it("routes Agent Security to Conditional Access and AI Security Windows 11", () => {
+    expect(getPlatformRepositories(getPlatform("agent-security"))).toEqual([
+      {
+        name: "Conditional Access",
+        url: "https://github.com/CoC-MS/ALSO-Microsoft-Security-Conditional-Access",
+      },
+      {
+        name: "AI Security Windows 11",
+        url: "https://github.com/CoC-MS/ALSO-Microsoft-Security-AI-Security-Windows11",
+      },
+    ]);
   });
 });
 
