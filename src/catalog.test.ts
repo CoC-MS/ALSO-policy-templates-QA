@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   getPlatform,
+  getAgentSecurityLicenseNote,
   enterpriseLicenses,
   getPlatformRepositories,
   getWindowsServerLicenseNote,
@@ -211,5 +212,25 @@ describe("Agent 365 prerequisite note", () => {
 
   it("does not show for other platforms", () => {
     expect(requiresAgent365Note("e5", "ai-security")).toBe(false);
+  });
+
+  it("offers Microsoft 365 E7 as an alternative for E5", () => {
+    expect(getAgentSecurityLicenseNote("e5", "agent-security")).toEqual({
+      title: "Agent 365 or Microsoft 365 E7 license required",
+      message: expect.stringContaining("either an Agent 365 license"),
+    });
+    expect(getAgentSecurityLicenseNote("e5", "agent-security")?.message).toContain(
+      "or a Microsoft 365 E7 license",
+    );
+  });
+
+  it("keeps the Agent 365-only warning for other supported licenses", () => {
+    expect(
+      getAgentSecurityLicenseNote(
+        "business-premium-defender-purview",
+        "agent-security",
+      )?.title,
+    ).toBe("Agent 365 license required");
+    expect(getAgentSecurityLicenseNote("e7", "agent-security")).toBeUndefined();
   });
 });

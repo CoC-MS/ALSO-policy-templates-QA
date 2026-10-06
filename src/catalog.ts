@@ -175,6 +175,27 @@ export function requiresAgent365Note(
   );
 }
 
+export function getAgentSecurityLicenseNote(
+  licenseId: License["id"],
+  platformId: Platform["id"],
+): { title: string; message: string } | undefined {
+  if (!requiresAgent365Note(licenseId, platformId)) {
+    return undefined;
+  }
+
+  if (licenseId === "e5") {
+    return {
+      title: "Agent 365 or Microsoft 365 E7 license required",
+      message: "Agent Security policies require either an Agent 365 license with Agent 365 portal onboarding completed, or a Microsoft 365 E7 license. Otherwise, the policies will fail during import and display an error message.",
+    };
+  }
+
+  return {
+    title: "Agent 365 license required",
+    message: "All Agent policies require an Agent 365 license to be assigned and Agent 365 portal onboarding to be completed before import. Otherwise, the policies will fail during import and display the following error message.",
+  };
+}
+
 const linuxDesktopIncludedLicenseIds = new Set<License["id"]>([
   "e5",
   "e7",

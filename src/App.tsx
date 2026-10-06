@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import {
   getPlatform,
+  getAgentSecurityLicenseNote,
   enterpriseLicenses,
   platforms,
-  requiresAgent365Note,
   smbLicenses,
   getPlatformRepositories,
   getWindowsServerLicenseNote,
@@ -203,6 +203,10 @@ function App() {
               <div className="recommendation-grid">
                 {selectedPlatforms.map((platform) => {
                   const repositories = getPlatformRepositories(platform);
+                  const agentLicenseNote = getAgentSecurityLicenseNote(
+                    selectedLicense.id,
+                    platform.id,
+                  );
                   return (
                     <article className="recommendation-card" key={platform.id}>
                       <span className="choice-icon" aria-hidden="true">{platform.shortLabel}</span>
@@ -215,10 +219,10 @@ function App() {
                           </section>
                         ))}
                       </div>
-                      {requiresAgent365Note(selectedLicense.id, platform.id) && (
+                      {agentLicenseNote && (
                         <aside className="license-requirement-note">
-                          <strong>Agent 365 license required</strong>
-                          <p>All Agent policies require an Agent 365 license to be assigned and Agent 365 portal onboarding to be completed before import. Otherwise, the policies will fail during import and display the following error message.</p>
+                          <strong>{agentLicenseNote.title}</strong>
+                          <p>{agentLicenseNote.message}</p>
                         </aside>
                       )}
                       {requiresLinuxDesktopLicenseNote(selectedLicense.id, platform.id) && (
