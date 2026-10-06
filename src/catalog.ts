@@ -272,7 +272,7 @@ const purviewUnavailableLicenseIds = new Set<License["id"]>([
   "f1-defender",
 ]);
 
-const purviewOnlyLicenseIds = new Set<License["id"]>(["e3", "a3"]);
+const purviewOnlyLicenseIds = new Set<License["id"]>(["e3", "a3", "g3"]);
 
 export function isPlatformAvailableForLicense(
   licenseId: License["id"],
@@ -328,6 +328,7 @@ const limitedPurviewLicenseIds = new Set<License["id"]>([
   "e3",
   "e3-defender",
   "a3",
+  "g3",
   "f3",
   "f3-defender",
 ]);
@@ -387,7 +388,7 @@ export function getPlatformLicenseNoteForLicenses(
     ) {
       return {
         title: "Limited Microsoft Purview experience",
-        message: "Microsoft 365 Business Premium, E3, A3, and F3 provide a limited Microsoft Purview experience. Some policy templates require additional Microsoft Purview licensing.",
+        message: "Microsoft 365 Business Premium, E3, A3, G3, and F3 provide a limited Microsoft Purview experience. Some policy templates require additional Microsoft Purview licensing.",
       };
     }
   }

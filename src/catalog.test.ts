@@ -180,6 +180,14 @@ describe("license selection", () => {
     expect(available).toEqual(["purview"]);
   });
 
+  it("allows standalone G3 to access only Purview policies", () => {
+    const available = platforms
+      .filter((platform) => isPlatformAvailableForLicense("g3", platform.id))
+      .map((platform) => platform.id);
+
+    expect(available).toEqual(["purview"]);
+  });
+
   it("combines E3 Purview access with another license's platform access", () => {
     expect(
       isPlatformAvailableForLicenses(["e3", "business-premium"], "windows-11"),
@@ -355,10 +363,10 @@ describe("Agent 365 prerequisite note", () => {
       ).toBeUndefined();
     });
 
-    it("shows limited Purview guidance for Business Premium, E3, A3, and F3", () => {
+    it("shows limited Purview guidance for Business Premium, E3, A3, G3, and F3", () => {
       expect(
         getPlatformLicenseNoteForLicenses(
-          ["business-premium", "e3", "a3", "f3"],
+          ["business-premium", "e3", "a3", "g3", "f3"],
           "purview",
         )?.title,
       ).toBe("Limited Microsoft Purview experience");
