@@ -29,7 +29,7 @@ describe("license eligibility", () => {
       "business-standard",
       "business-basic",
     ]);
-    expect(licenses.filter((license) => isLicenseEligible(license.id))).toHaveLength(21);
+    expect(licenses.filter((license) => isLicenseEligible(license.id))).toHaveLength(22);
   });
 
   it("groups all Business plans under SMB", () => {
@@ -55,6 +55,7 @@ describe("license eligibility", () => {
       "eag3-defender-purview",
       "f3",
       "f3-defender",
+      "f3-purview",
       "f3-defender-purview",
       "f1",
       "f1-defender",
@@ -214,6 +215,19 @@ describe("license selection", () => {
     expect(available).toEqual(["purview"]);
     expect(
       getPlatformLicenseNoteForLicenses(["eag3-purview"], "purview"),
+    ).toBeUndefined();
+  });
+
+  it("gives F3 + Purview Suite the same full Purview-only access", () => {
+    const available = platforms
+      .filter((platform) =>
+        isPlatformAvailableForLicense("f3-purview", platform.id),
+      )
+      .map((platform) => platform.id);
+
+    expect(available).toEqual(["purview"]);
+    expect(
+      getPlatformLicenseNoteForLicenses(["f3-purview"], "purview"),
     ).toBeUndefined();
   });
 

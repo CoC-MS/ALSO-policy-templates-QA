@@ -12,6 +12,7 @@ export const licenses = [
   { id: "eag3-defender-purview", name: "Microsoft 365 E3/A3/G3 + Defender and Purview Suite", eligible: true },
   { id: "f3", name: "Microsoft 365 F3", eligible: true },
   { id: "f3-defender", name: "Microsoft 365 F3 + Defender Suite FLW", eligible: true },
+  { id: "f3-purview", name: "Microsoft 365 F3 + Purview Suite FLW", eligible: true },
   { id: "f3-defender-purview", name: "Microsoft 365 F3 + Defender and Purview Suite FLW", eligible: true },
   { id: "f1", name: "Microsoft 365 F1", eligible: true },
   { id: "f1-defender", name: "Microsoft 365 F1 + Defender Suite FLW", eligible: true },
@@ -307,7 +308,7 @@ export function isPlatformAvailableForLicenses(
   }
 
   return eligibleLicenseIds.some((licenseId) => {
-    if (licenseId === "eag3-purview") {
+    if (licenseId === "eag3-purview" || licenseId === "f3-purview") {
       return false;
     }
 
