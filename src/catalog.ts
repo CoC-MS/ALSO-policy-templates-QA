@@ -11,6 +11,7 @@ export const licenses = [
   { id: "a5", name: "Microsoft 365 A5", eligible: true },
   { id: "g3", name: "Microsoft 365 G3", eligible: true },
   { id: "g5", name: "Microsoft 365 G5", eligible: true },
+  { id: "g7", name: "Microsoft 365 G7", eligible: true },
   { id: "business-premium-defender", name: "Microsoft 365 Business Premium + Defender Suite", eligible: true },
   { id: "business-premium-purview", name: "Microsoft 365 Business Premium + Purview Suite", eligible: true },
   { id: "business-premium-defender-purview", name: "Microsoft 365 Business Premium + Defender and Purview Suite", eligible: true },
@@ -164,29 +165,45 @@ export function togglePlatformSelection(
     : [...selected, platform];
 }
 
+export function toggleLicenseSelection(
+  selected: readonly License[],
+  license: License,
+): License[] {
+  return selected.some((item) => item.id === license.id)
+    ? selected.filter((item) => item.id !== license.id)
+    : [...selected, license];
+}
+
 export function requiresAgent365Note(
   licenseId: License["id"],
   platformId: Platform["id"],
 ): boolean {
-  return (
-    isPlatformAvailableForLicense(licenseId, platformId) &&
-    platformId === "agent-security" &&
-    licenseId !== "e7"
-  );
+  return getAgentSecurityLicenseNoteForLicenses([licenseId], platformId) !== undefined;
 }
 
 export function getAgentSecurityLicenseNote(
   licenseId: License["id"],
   platformId: Platform["id"],
 ): { title: string; message: string } | undefined {
-  if (!requiresAgent365Note(licenseId, platformId)) {
+  return getAgentSecurityLicenseNoteForLicenses([licenseId], platformId);
+}
+
+export function getAgentSecurityLicenseNoteForLicenses(
+  licenseIds: readonly License["id"][],
+  platformId: Platform["id"],
+): { title: string; message: string } | undefined {
+  if (
+    platformId !== "agent-security" ||
+    !isPlatformAvailableForLicenses(licenseIds, platformId) ||
+    licenseIds.some((licenseId) => licenseId === "e7" || licenseId === "g7")
+  ) {
     return undefined;
   }
 
-  if (licenseId === "e5") {
+  if (licenseIds.includes("e5")) {
     return {
-      title: "Agent 365 or Microsoft 365 E7 license required",
-      message: "Agent Security policies require either an Agent 365 license with Agent 365 portal onboarding completed, or a Microsoft 365 E7 license. Otherwise, the policies will fail during import and display an error message.",
+      title: "Agent 365, Microsoft 365 E7, or Microsoft 365 G7 license required",
+      message: "Agent Security policies require either an Agent 365 license with Agent 365 portal onboarding completed, a Microsoft 365 E7 license, or a Microsoft 365 G7 license. Otherwise, the policies will fail during import and display an error message.",
     };
   }
 
@@ -199,6 +216,7 @@ export function getAgentSecurityLicenseNote(
 const linuxDesktopIncludedLicenseIds = new Set<License["id"]>([
   "e5",
   "e7",
+  "g7",
   "a3-defender",
   "a3-defender-purview",
   "business-premium-defender",
@@ -211,9 +229,16 @@ export function requiresLinuxDesktopLicenseNote(
   licenseId: License["id"],
   platformId: Platform["id"],
 ): boolean {
+  return requiresLinuxDesktopLicenseNoteForLicenses([licenseId], platformId);
+}
+
+export function requiresLinuxDesktopLicenseNoteForLicenses(
+  licenseIds: readonly License["id"][],
+  platformId: Platform["id"],
+): boolean {
   return (
     platformId === "linux-desktop" &&
-    !linuxDesktopIncludedLicenseIds.has(licenseId)
+    !licenseIds.some((licenseId) => linuxDesktopIncludedLicenseIds.has(licenseId))
   );
 }
 
@@ -227,15 +252,23 @@ const agentSecurityLicenseIds = new Set<License["id"]>([
   "a3-defender-purview",
   "a5",
   "e7",
+  "g7",
 ]);
 
 export function isPlatformAvailableForLicense(
   licenseId: License["id"],
   platformId: Platform["id"],
 ): boolean {
+  return isPlatformAvailableForLicenses([licenseId], platformId);
+}
+
+export function isPlatformAvailableForLicenses(
+  licenseIds: readonly License["id"][],
+  platformId: Platform["id"],
+): boolean {
   return (
     platformId !== "agent-security" ||
-    agentSecurityLicenseIds.has(licenseId)
+    licenseIds.some((licenseId) => agentSecurityLicenseIds.has(licenseId))
   );
 }
 
@@ -253,18 +286,31 @@ const enterpriseServerLicenseIds = new Set<License["id"]>([
   "e3-defender-purview",
   "e5",
   "e7",
+  "g7",
 ]);
 
 export function getWindowsServerLicenseNote(
   licenseId: License["id"],
 ): string | undefined {
   if (businessPremiumLicenseIds.has(licenseId)) {
-    return "A Microsoft Defender for Business servers license is also required for each on-premises server. For cloud or Azure Arc-enabled servers, a Microsoft Defender for Servers Plan 1 or Plan 2 subscription through Microsoft Defender for Cloud is required in addition to the selected Microsoft 365 license.";
+    return "A Microsoft Defender for Business servers license is also required for each on-premises server. For cloud or Azure Arc-enabled servers, a Microsoft Defender for Servers Plan 1 or Plan 2 subscription through Microsoft Defender for Cloud is required in addition to the selected Microsoft 365 license(s).";
   }
 
   if (enterpriseServerLicenseIds.has(licenseId)) {
-    return "A Microsoft Defender for Endpoint Server license is also required for each on-premises server. For cloud or Azure Arc-enabled servers, a Microsoft Defender for Servers Plan 1 or Plan 2 subscription through Microsoft Defender for Cloud is required in addition to the selected Microsoft 365 license.";
+    return "A Microsoft Defender for Endpoint Server license is also required for each on-premises server. For cloud or Azure Arc-enabled servers, a Microsoft Defender for Servers Plan 1 or Plan 2 subscription through Microsoft Defender for Cloud is required in addition to the selected Microsoft 365 license(s).";
   }
 
   return undefined;
+}
+
+export function getWindowsServerLicenseNotes(
+  licenseIds: readonly License["id"][],
+): string[] {
+  return [
+    ...new Set(
+      licenseIds
+        .map((licenseId) => getWindowsServerLicenseNote(licenseId))
+        .filter((note): note is string => note !== undefined),
+    ),
+  ];
 }

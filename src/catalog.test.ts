@@ -2,16 +2,21 @@ import { describe, expect, it } from "vitest";
 import {
   getPlatform,
   getAgentSecurityLicenseNote,
+  getAgentSecurityLicenseNoteForLicenses,
   enterpriseLicenses,
   getPlatformRepositories,
   getWindowsServerLicenseNote,
+  getWindowsServerLicenseNotes,
   isLicenseEligible,
   isPlatformAvailableForLicense,
+  isPlatformAvailableForLicenses,
   licenses,
   platforms,
   requiresAgent365Note,
   requiresLinuxDesktopLicenseNote,
+  requiresLinuxDesktopLicenseNoteForLicenses,
   smbLicenses,
+  toggleLicenseSelection,
   togglePlatformSelection,
 } from "./catalog";
 
@@ -23,7 +28,7 @@ describe("license eligibility", () => {
       "business-basic",
       "business-standard",
     ]);
-    expect(licenses.filter((license) => isLicenseEligible(license.id))).toHaveLength(16);
+    expect(licenses.filter((license) => isLicenseEligible(license.id))).toHaveLength(17);
   });
 
   it("groups all Business plans under SMB", () => {
@@ -35,7 +40,7 @@ describe("license eligibility", () => {
       "business-premium-purview",
       "business-premium-defender-purview",
     ]);
-    expect(enterpriseLicenses).toHaveLength(12);
+    expect(enterpriseLicenses).toHaveLength(13);
     expect(
       new Set([...enterpriseLicenses, ...smbLicenses].map((license) => license.id)),
     ).toEqual(new Set(licenses.map((license) => license.id)));
@@ -116,6 +121,40 @@ describe("platform selection", () => {
   });
 });
 
+describe("license selection", () => {
+  it("selects multiple licenses and toggles individual selections", () => {
+    const e5 = licenses.find((license) => license.id === "e5")!;
+    const g7 = licenses.find((license) => license.id === "g7")!;
+
+    const twoSelected = toggleLicenseSelection(
+      toggleLicenseSelection([], e5),
+      g7,
+    );
+    expect(twoSelected.map((license) => license.id)).toEqual(["e5", "g7"]);
+    expect(toggleLicenseSelection(twoSelected, e5)).toEqual([g7]);
+  });
+
+  it("combines platform access across all selected licenses", () => {
+    expect(
+      isPlatformAvailableForLicenses(
+        ["business-premium", "e5"],
+        "agent-security",
+      ),
+    ).toBe(true);
+    expect(
+      isPlatformAvailableForLicenses(["business-premium"], "agent-security"),
+    ).toBe(false);
+  });
+
+  it("gives G7 the same platform access as E7", () => {
+    for (const platform of platforms) {
+      expect(isPlatformAvailableForLicense("g7", platform.id)).toBe(
+        isPlatformAvailableForLicense("e7", platform.id),
+      );
+    }
+  });
+});
+
 describe("Agent 365 prerequisite note", () => {
   const eligibleLicenses = [
     "e5",
@@ -123,6 +162,7 @@ describe("Agent 365 prerequisite note", () => {
     "a3-defender-purview",
     "a5",
     "g5",
+    "g7",
     "business-premium-defender",
     "business-premium-defender-purview",
     "e3-defender",
@@ -143,6 +183,7 @@ describe("Agent 365 prerequisite note", () => {
     it.each([
       "e5",
       "e7",
+      "g7",
       "a3-defender",
       "a3-defender-purview",
       "business-premium-defender",
@@ -169,6 +210,21 @@ describe("Agent 365 prerequisite note", () => {
     it("does not show for other platforms", () => {
       expect(requiresLinuxDesktopLicenseNote("e3", "linux-server")).toBe(false);
     });
+
+    it("does not show when any selected license includes the prerequisite", () => {
+      expect(
+        requiresLinuxDesktopLicenseNoteForLicenses(
+          ["business-premium", "g7"],
+          "linux-desktop",
+        ),
+      ).toBe(false);
+      expect(
+        requiresLinuxDesktopLicenseNoteForLicenses(
+          ["business-premium", "g3"],
+          "linux-desktop",
+        ),
+      ).toBe(true);
+    });
   });
 
   describe("Windows Server licensing notes", () => {
@@ -194,11 +250,24 @@ describe("Agent 365 prerequisite note", () => {
       expect(getWindowsServerLicenseNote("e7")).toContain(
         "Microsoft Defender for Endpoint Server",
       );
+      expect(getWindowsServerLicenseNote("g7")).toBe(
+        getWindowsServerLicenseNote("e7"),
+      );
     });
 
     it("does not show a Windows Server note for unrelated license families", () => {
       expect(getWindowsServerLicenseNote("a3")).toBeUndefined();
       expect(getWindowsServerLicenseNote("g5")).toBeUndefined();
+    });
+
+    it("returns each applicable server note once for multiple licenses", () => {
+      expect(
+        getWindowsServerLicenseNotes([
+          "business-premium",
+          "business-premium-defender",
+          "e5",
+        ]),
+      ).toHaveLength(2);
     });
   });
 
@@ -207,6 +276,7 @@ describe("Agent 365 prerequisite note", () => {
     expect(requiresAgent365Note("business-premium-defender-purview", "agent-security")).toBe(true);
     expect(requiresAgent365Note("e5", "agent-security")).toBe(true);
     expect(requiresAgent365Note("e7", "agent-security")).toBe(false);
+    expect(requiresAgent365Note("g7", "agent-security")).toBe(false);
     expect(requiresAgent365Note("business-premium", "agent-security")).toBe(false);
   });
 
@@ -214,13 +284,16 @@ describe("Agent 365 prerequisite note", () => {
     expect(requiresAgent365Note("e5", "ai-security")).toBe(false);
   });
 
-  it("offers Microsoft 365 E7 as an alternative for E5", () => {
+  it("offers Microsoft 365 E7 and G7 as alternatives for E5", () => {
     expect(getAgentSecurityLicenseNote("e5", "agent-security")).toEqual({
-      title: "Agent 365 or Microsoft 365 E7 license required",
+      title: "Agent 365, Microsoft 365 E7, or Microsoft 365 G7 license required",
       message: expect.stringContaining("either an Agent 365 license"),
     });
     expect(getAgentSecurityLicenseNote("e5", "agent-security")?.message).toContain(
-      "or a Microsoft 365 E7 license",
+      "a Microsoft 365 E7 license",
+    );
+    expect(getAgentSecurityLicenseNote("e5", "agent-security")?.message).toContain(
+      "or a Microsoft 365 G7 license",
     );
   });
 
@@ -232,5 +305,21 @@ describe("Agent 365 prerequisite note", () => {
       )?.title,
     ).toBe("Agent 365 license required");
     expect(getAgentSecurityLicenseNote("e7", "agent-security")).toBeUndefined();
+    expect(getAgentSecurityLicenseNote("g7", "agent-security")).toBeUndefined();
+  });
+
+  it("uses E7 or G7 to satisfy the Agent prerequisite across selections", () => {
+    expect(
+      getAgentSecurityLicenseNoteForLicenses(
+        ["business-premium-defender", "g7"],
+        "agent-security",
+      ),
+    ).toBeUndefined();
+    expect(
+      getAgentSecurityLicenseNoteForLicenses(
+        ["business-premium-defender", "e5"],
+        "agent-security",
+      )?.title,
+    ).toContain("Microsoft 365 G7");
   });
 });

@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
 import {
   getPlatform,
-  getAgentSecurityLicenseNote,
+  getAgentSecurityLicenseNoteForLicenses,
   enterpriseLicenses,
   platforms,
   smbLicenses,
   getPlatformRepositories,
-  getWindowsServerLicenseNote,
-  isPlatformAvailableForLicense,
-  requiresLinuxDesktopLicenseNote,
+  getWindowsServerLicenseNotes,
+  isPlatformAvailableForLicenses,
+  requiresLinuxDesktopLicenseNoteForLicenses,
+  toggleLicenseSelection,
   togglePlatformSelection,
   type License,
   type Platform,
@@ -26,20 +27,31 @@ function ArrowIcon() {
 
 function LicenseGrid({
   items,
-  onChoose,
+  selected,
+  onToggle,
 }: {
   items: readonly License[];
-  onChoose: (license: License) => void;
+  selected: readonly License[];
+  onToggle: (license: License) => void;
 }) {
   return (
     <div className="card-grid license-grid">
-      {items.map((license) => (
-        <button className="choice-card" type="button" key={license.id} onClick={() => onChoose(license)}>
-          <span className="choice-icon" aria-hidden="true">M365</span>
-          <span className="choice-name">{license.name}</span>
-          <span className="choice-arrow" aria-hidden="true">&rarr;</span>
-        </button>
-      ))}
+      {items.map((license) => {
+        const isSelected = selected.some((item) => item.id === license.id);
+        return (
+          <button
+            className={`choice-card ${isSelected ? "selected" : ""}`}
+            type="button"
+            key={license.id}
+            aria-pressed={isSelected}
+            onClick={() => onToggle(license)}
+          >
+            <span className="choice-icon" aria-hidden="true">M365</span>
+            <span className="choice-name">{license.name}</span>
+            <span className="choice-check" aria-hidden="true">{isSelected ? "\u2713" : ""}</span>
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -50,7 +62,7 @@ function StepIndicator({ step }: { step: Step }) {
     <div className="steps" aria-label="Progress">
       <div className="step-item active">
         <span aria-hidden="true">1</span>
-        <strong>License</strong>
+        <strong>License(s)</strong>
       </div>
       <div className="step-line" aria-hidden="true" />
       <div className={`step-item ${platformActive ? "active" : ""}`}>
@@ -68,17 +80,31 @@ function StepIndicator({ step }: { step: Step }) {
 
 function App() {
   const [step, setStep] = useState<Step>("license");
-  const [selectedLicense, setSelectedLicense] = useState<License>();
+  const [selectedLicenses, setSelectedLicenses] = useState<License[]>([]);
   const [selectedPlatforms, setSelectedPlatforms] = useState<Platform[]>([]);
+  const eligibleLicenses = selectedLicenses.filter((license) => license.eligible);
+  const eligibleLicenseIds = eligibleLicenses.map((license) => license.id);
 
   useEffect(() => {
     document.getElementById("main-title")?.focus();
   }, [step]);
 
-  function chooseLicense(license: License) {
-    setSelectedLicense(license);
-    setSelectedPlatforms([]);
-    setStep(license.eligible ? "platform" : "blocked");
+  function toggleLicense(license: License) {
+    setSelectedLicenses((current) => toggleLicenseSelection(current, license));
+  }
+
+  function continueFromLicenses() {
+    if (eligibleLicenses.length === 0) {
+      setStep("blocked");
+      return;
+    }
+
+    setSelectedPlatforms((current) =>
+      current.filter((platform) =>
+        isPlatformAvailableForLicenses(eligibleLicenseIds, platform.id),
+      ),
+    );
+    setStep("platform");
   }
 
   function togglePlatform(platform: Platform) {
@@ -88,7 +114,7 @@ function App() {
   }
 
   function startOver() {
-    setSelectedLicense(undefined);
+    setSelectedLicenses([]);
     setSelectedPlatforms([]);
     setStep("license");
   }
@@ -119,29 +145,47 @@ function App() {
 
           {step === "license" && (
             <section aria-labelledby="main-title">
-              <div className="eyebrow">Find your security templates</div>
-              <h1 id="main-title" tabIndex={-1}>Which Microsoft 365 license do you have today?</h1>
-              <p className="intro">Select your current license to see which ALSO security policy templates are available to your organization.</p>
+              <div className="eyebrow">Find your security policy templates</div>
+              <h1 id="main-title" tabIndex={-1}>Which Microsoft 365 license(s) do you have today?</h1>
+              <p className="intro">Select all your current licenses to see which ALSO security policy templates are available to your organization.</p>
               <div className="license-section" aria-labelledby="enterprise-heading">
                 <h2 id="enterprise-heading">Enterprise</h2>
-                <LicenseGrid items={enterpriseLicenses} onChoose={chooseLicense} />
+                <LicenseGrid items={enterpriseLicenses} selected={selectedLicenses} onToggle={toggleLicense} />
               </div>
               <div className="license-section" aria-labelledby="smb-heading">
                 <h2 id="smb-heading">SMB</h2>
-                <LicenseGrid items={smbLicenses} onChoose={chooseLicense} />
+                <LicenseGrid items={smbLicenses} selected={selectedLicenses} onToggle={toggleLicense} />
+              </div>
+              <div className="actions license-actions">
+                <button
+                  className="button primary"
+                  type="button"
+                  disabled={selectedLicenses.length === 0}
+                  onClick={continueFromLicenses}
+                >
+                  {selectedLicenses.length === 0
+                    ? "Select at least one license"
+                    : `Continue with ${selectedLicenses.length} license${selectedLicenses.length === 1 ? "" : "s"}`} &rarr;
+                </button>
               </div>
             </section>
           )}
 
-          {step === "platform" && selectedLicense && (
+          {step === "platform" && eligibleLicenses.length > 0 && (
             <section aria-labelledby="main-title">
-              <div className="selection-pill"><span aria-hidden="true">&#10003;</span>{selectedLicense.name}</div>
+              <div className="selection-pills" aria-label="Selected eligible licenses">
+                {eligibleLicenses.map((license) => (
+                  <span className="selection-pill" key={license.id}>
+                    <span aria-hidden="true">&#10003;</span>{license.name}
+                  </span>
+                ))}
+              </div>
               <h1 id="main-title" tabIndex={-1}>Which platforms or solutions do you need security templates for?</h1>
               <p className="intro">Select one or more platforms, then continue to see every relevant policy template repository.</p>
               <div className="card-grid platform-grid" aria-label="Platforms and solutions">
                 {platforms
                   .filter((platform) =>
-                    isPlatformAvailableForLicense(selectedLicense.id, platform.id),
+                    isPlatformAvailableForLicenses(eligibleLicenseIds, platform.id),
                   )
                   .map((platform) => {
                     const isSelected = selectedPlatforms.some((item) => item.id === platform.id);
@@ -179,34 +223,38 @@ function App() {
             </section>
           )}
 
-          {step === "blocked" && selectedLicense && (
+          {step === "blocked" && selectedLicenses.length > 0 && (
             <section className="result-wrap" aria-labelledby="main-title">
               <div className="result-card blocked-card">
                 <div className="result-icon blocked-icon" aria-hidden="true">!</div>
                 <div className="eyebrow">License prerequisite</div>
                 <h1 id="main-title" tabIndex={-1}>A higher license is needed</h1>
-                <p>{selectedLicense.name} does not meet the minimum prerequisite for these security policy templates.</p>
-                <p>The minimum supported license is <strong>Microsoft 365 Business Premium</strong>. No applicable templates are available for your selected license.</p>
+                <p>{selectedLicenses.map((license) => license.name).join(" and ")} {selectedLicenses.length === 1 ? "does" : "do"} not meet the minimum prerequisite for these security policy templates.</p>
+                <p>The minimum supported license is <strong>Microsoft 365 Business Premium</strong>. No applicable templates are available for your selected license(s).</p>
                 <button className="button primary" type="button" onClick={startOver}>&larr; Start over</button>
               </div>
             </section>
           )}
 
-          {step === "result" && selectedLicense && selectedPlatforms.length > 0 && (
+          {step === "result" && eligibleLicenses.length > 0 && selectedPlatforms.length > 0 && (
             <section className="result-wrap" aria-labelledby="main-title">
               <div className="result-heading">
                 <div className="result-icon" aria-hidden="true">&#10003;</div>
                 <div className="eyebrow">Recommended repositories</div>
                 <h1 id="main-title" tabIndex={-1}>Your security template repositories</h1>
-                <p>Based on <strong>{selectedLicense.name}</strong>, here are the repositories for your {selectedPlatforms.length} selected {selectedPlatforms.length === 1 ? "platform" : "platforms"}.</p>
+                <p>Based on <strong>{eligibleLicenses.map((license) => license.name).join(", ")}</strong>, here are the repositories for your {selectedPlatforms.length} selected {selectedPlatforms.length === 1 ? "platform" : "platforms"}.</p>
               </div>
               <div className="recommendation-grid">
                 {selectedPlatforms.map((platform) => {
                   const repositories = getPlatformRepositories(platform);
-                  const agentLicenseNote = getAgentSecurityLicenseNote(
-                    selectedLicense.id,
+                  const agentLicenseNote = getAgentSecurityLicenseNoteForLicenses(
+                    eligibleLicenseIds,
                     platform.id,
                   );
+                  const windowsServerNotes =
+                    platform.id === "windows-servers"
+                      ? getWindowsServerLicenseNotes(eligibleLicenseIds)
+                      : [];
                   return (
                     <article className="recommendation-card" key={platform.id}>
                       <span className="choice-icon" aria-hidden="true">{platform.shortLabel}</span>
@@ -225,19 +273,18 @@ function App() {
                           <p>{agentLicenseNote.message}</p>
                         </aside>
                       )}
-                      {requiresLinuxDesktopLicenseNote(selectedLicense.id, platform.id) && (
+                      {requiresLinuxDesktopLicenseNoteForLicenses(eligibleLicenseIds, platform.id) && (
                         <aside className="license-requirement-note">
                           <strong>Microsoft Defender for Endpoint Plan 2 required</strong>
-                          <p>Linux Desktop policies require a Microsoft Defender for Endpoint Plan 2 license. This license must be purchased and assigned in addition to the selected Microsoft 365 license.</p>
+                          <p>Linux Desktop policies require a Microsoft Defender for Endpoint Plan 2 license. This license must be purchased and assigned in addition to the selected Microsoft 365 license(s).</p>
                         </aside>
                       )}
-                      {platform.id === "windows-servers" &&
-                        getWindowsServerLicenseNote(selectedLicense.id) && (
-                          <aside className="license-requirement-note">
-                            <strong>Additional server license required</strong>
-                            <p>{getWindowsServerLicenseNote(selectedLicense.id)}</p>
-                          </aside>
-                        )}
+                      {windowsServerNotes.map((note) => (
+                        <aside className="license-requirement-note" key={note}>
+                          <strong>Additional server license required</strong>
+                          <p>{note}</p>
+                        </aside>
+                      ))}
                       <div className="repository-links">
                         {repositories.map((repository) => (
                           <a
