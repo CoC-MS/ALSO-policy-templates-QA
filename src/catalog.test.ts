@@ -117,12 +117,14 @@ describe("platform selection", () => {
 
 describe("Agent 365 prerequisite note", () => {
   const eligibleLicenses = [
+    "business-premium",
     "e5",
     "e7",
     "a3-defender-purview",
     "a5",
     "g5",
     "business-premium-defender",
+    "business-premium-defender-purview",
     "e3-defender",
     "e3-defender-purview",
   ] as const;
@@ -202,9 +204,10 @@ describe("Agent 365 prerequisite note", () => {
 
   it("shows for supported Agent Security licenses except E7", () => {
     expect(requiresAgent365Note("business-premium-defender", "agent-security")).toBe(true);
+    expect(requiresAgent365Note("business-premium-defender-purview", "agent-security")).toBe(true);
     expect(requiresAgent365Note("e5", "agent-security")).toBe(true);
     expect(requiresAgent365Note("e7", "agent-security")).toBe(false);
-    expect(requiresAgent365Note("business-premium", "agent-security")).toBe(false);
+    expect(requiresAgent365Note("business-premium", "agent-security")).toBe(true);
   });
 
   it("does not show for other platforms", () => {

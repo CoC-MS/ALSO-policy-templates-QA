@@ -197,7 +197,9 @@ export function requiresLinuxDesktopLicenseNote(
 }
 
 const agentSecurityLicenseIds = new Set<License["id"]>([
+  "business-premium",
   "business-premium-defender",
+  "business-premium-defender-purview",
   "e3-defender",
   "e3-defender-purview",
   "e5",
