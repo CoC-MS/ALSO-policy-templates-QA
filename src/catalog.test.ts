@@ -163,6 +163,29 @@ describe("license selection", () => {
       isPlatformAvailableForLicense("f1-defender-purview", "purview"),
     ).toBe(true);
   });
+
+  it("allows standalone E3 to access only Purview policies", () => {
+    const available = platforms
+      .filter((platform) => isPlatformAvailableForLicense("e3", platform.id))
+      .map((platform) => platform.id);
+
+    expect(available).toEqual(["purview"]);
+  });
+
+  it("combines E3 Purview access with another license's platform access", () => {
+    expect(
+      isPlatformAvailableForLicenses(["e3", "business-premium"], "windows-11"),
+    ).toBe(true);
+    expect(
+      isPlatformAvailableForLicenses(["e3", "business-premium"], "purview"),
+    ).toBe(true);
+    expect(
+      isPlatformAvailableForLicenses(
+        ["e3", "business-premium"],
+        "agent-security",
+      ),
+    ).toBe(false);
+  });
 });
 
 describe("Agent 365 prerequisite note", () => {
@@ -338,6 +361,23 @@ describe("Agent 365 prerequisite note", () => {
         getPlatformLicenseNoteForLicenses(
           ["f3", "f3-defender-purview"],
           "purview",
+        ),
+      ).toBeUndefined();
+    });
+
+    it("shows Business Premium Conditional Access prerequisites", () => {
+      const note = getPlatformLicenseNoteForLicenses(
+        ["business-premium"],
+        "conditional-access",
+      );
+
+      expect(note?.title).toBe("Limited Conditional Access experience");
+      expect(note?.message).toContain("Microsoft Entra ID P2");
+      expect(note?.message).toContain("Agent 365");
+      expect(
+        getPlatformLicenseNoteForLicenses(
+          ["business-premium", "e5"],
+          "conditional-access",
         ),
       ).toBeUndefined();
     });

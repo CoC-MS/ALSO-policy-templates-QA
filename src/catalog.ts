@@ -283,17 +283,23 @@ export function isPlatformAvailableForLicenses(
   licenseIds: readonly License["id"][],
   platformId: Platform["id"],
 ): boolean {
+  const eligibleLicenseIds = licenseIds.filter((licenseId) =>
+    isLicenseEligible(licenseId),
+  );
+
   if (platformId === "agent-security") {
-    return licenseIds.some((licenseId) => agentSecurityLicenseIds.has(licenseId));
+    return eligibleLicenseIds.some((licenseId) =>
+      agentSecurityLicenseIds.has(licenseId),
+    );
   }
 
   if (platformId === "purview") {
-    return licenseIds.some(
+    return eligibleLicenseIds.some(
       (licenseId) => !purviewUnavailableLicenseIds.has(licenseId),
     );
   }
 
-  return true;
+  return eligibleLicenseIds.some((licenseId) => licenseId !== "e3");
 }
 
 const frontlineLicenseIds = new Set<License["id"]>([
@@ -303,6 +309,11 @@ const frontlineLicenseIds = new Set<License["id"]>([
   "f1-defender-purview",
   "f3-defender",
   "f3-defender-purview",
+]);
+
+const limitedBusinessPremiumConditionalAccessIds = new Set<License["id"]>([
+  "business-premium",
+  "business-premium-purview",
 ]);
 
 const limitedEndpointLicenseIds = new Set<License["id"]>(["f1", "f3"]);
@@ -327,15 +338,36 @@ export function getPlatformLicenseNoteForLicenses(
   licenseIds: readonly License["id"][],
   platformId: Platform["id"],
 ): { title: string; message: string } | undefined {
-  if (
-    platformId === "conditional-access" &&
-    licenseIds.length > 0 &&
-    licenseIds.every((licenseId) => frontlineLicenseIds.has(licenseId))
-  ) {
-    return {
-      title: "Limited Conditional Access experience",
-      message: "Microsoft 365 F1 and F3 licenses support a limited set of Conditional Access capabilities. Some policy templates may require additional Microsoft Entra ID licensing.",
-    };
+  if (platformId === "conditional-access") {
+    const conditionalAccessLicenseIds = licenseIds.filter((licenseId) =>
+      isPlatformAvailableForLicense(licenseId, platformId),
+    );
+    const hasOnlyLimitedConditionalAccess = conditionalAccessLicenseIds.every(
+      (licenseId) =>
+        frontlineLicenseIds.has(licenseId) ||
+        limitedBusinessPremiumConditionalAccessIds.has(licenseId),
+    );
+
+    if (
+      conditionalAccessLicenseIds.length > 0 &&
+      hasOnlyLimitedConditionalAccess
+    ) {
+      if (
+        conditionalAccessLicenseIds.some((licenseId) =>
+          limitedBusinessPremiumConditionalAccessIds.has(licenseId),
+        )
+      ) {
+        return {
+          title: "Limited Conditional Access experience",
+          message: "Microsoft 365 Business Premium provides limited Conditional Access capabilities. Some policy templates require an additional Microsoft Entra ID P2 license and an Agent 365 license.",
+        };
+      }
+
+      return {
+        title: "Limited Conditional Access experience",
+        message: "Microsoft 365 F1 and F3 licenses support a limited set of Conditional Access capabilities. Some policy templates may require additional Microsoft Entra ID licensing.",
+      };
+    }
   }
 
   if (platformId === "purview") {
