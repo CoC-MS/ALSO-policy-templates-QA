@@ -29,7 +29,7 @@ describe("license eligibility", () => {
       "business-standard",
       "business-basic",
     ]);
-    expect(licenses.filter((license) => isLicenseEligible(license.id))).toHaveLength(16);
+    expect(licenses.filter((license) => isLicenseEligible(license.id))).toHaveLength(17);
   });
 
   it("groups all Business plans under SMB", () => {
@@ -47,13 +47,14 @@ describe("license eligibility", () => {
       "e5",
       "g5",
       "a5",
-      "eag3f3a1",
-      "eag3f3a1-defender",
-      "eag3f3a1-purview",
-      "eag3f3a1-defender-purview",
-      "f1",
-      "f1-defender",
-      "f1-defender-purview",
+      "eag3f3",
+      "eag3f3-defender",
+      "eag3f3-purview",
+      "eag3f3-defender-purview",
+      "f1a1",
+      "f1a1-defender",
+      "f1a1-purview",
+      "f1a1-defender-purview",
     ]);
     expect(
       new Set([...enterpriseLicenses, ...smbLicenses].map((license) => license.id)),
@@ -168,19 +169,19 @@ describe("license selection", () => {
     }
   });
 
-  it("limits Purview access for F1 while allowing the merged base option", () => {
-    expect(isPlatformAvailableForLicense("f1", "purview")).toBe(false);
-    expect(isPlatformAvailableForLicense("f1-defender", "purview")).toBe(false);
-    expect(isPlatformAvailableForLicense("eag3f3a1", "purview")).toBe(true);
+  it("allows limited Purview access for both merged base options", () => {
+    expect(isPlatformAvailableForLicense("f1a1", "purview")).toBe(true);
+    expect(isPlatformAvailableForLicense("f1a1-defender", "purview")).toBe(true);
+    expect(isPlatformAvailableForLicense("eag3f3", "purview")).toBe(true);
     expect(
-      isPlatformAvailableForLicense("f1-defender-purview", "purview"),
+      isPlatformAvailableForLicense("f1a1-defender-purview", "purview"),
     ).toBe(true);
   });
 
-  it("gives the merged E3/A3/G3/F3/A1 base option limited access", () => {
+  it("gives the merged E3/A3/G3/F3 base option limited access", () => {
     const available = platforms
       .filter((platform) =>
-        isPlatformAvailableForLicense("eag3f3a1", platform.id),
+        isPlatformAvailableForLicense("eag3f3", platform.id),
       )
       .map((platform) => platform.id);
 
@@ -196,35 +197,61 @@ describe("license selection", () => {
     ]);
   });
 
-  it("gives the shared E3/A3/G3/F3/A1 Purview Suite full Purview-only access", () => {
+  it("gives both shared Purview Suite options full Purview-only access", () => {
     const available = platforms
       .filter((platform) =>
-        isPlatformAvailableForLicense("eag3f3a1-purview", platform.id),
+        isPlatformAvailableForLicense("eag3f3-purview", platform.id),
       )
       .map((platform) => platform.id);
 
     expect(available).toEqual(["purview"]);
     expect(
-      getPlatformLicenseNoteForLicenses(["eag3f3a1-purview"], "purview"),
+      getPlatformLicenseNoteForLicenses(["eag3f3-purview"], "purview"),
+    ).toBeUndefined();
+    expect(
+      platforms
+        .filter((platform) =>
+          isPlatformAvailableForLicense("f1a1-purview", platform.id),
+        )
+        .map((platform) => platform.id),
+    ).toEqual(["purview"]);
+    expect(
+      getPlatformLicenseNoteForLicenses(["f1a1-purview"], "purview"),
     ).toBeUndefined();
   });
+
+  it.each([
+    ["eag3f3", "f1a1"],
+    ["eag3f3-defender", "f1a1-defender"],
+    ["eag3f3-purview", "f1a1-purview"],
+    ["eag3f3-defender-purview", "f1a1-defender-purview"],
+  ] as const)(
+    "gives %s and %s the same platform capabilities",
+    (eag3f3LicenseId, f1a1LicenseId) => {
+      for (const platform of platforms) {
+        expect(
+          isPlatformAvailableForLicense(f1a1LicenseId, platform.id),
+        ).toBe(isPlatformAvailableForLicense(eag3f3LicenseId, platform.id));
+      }
+    },
+  );
 
   it("combines merged base access with another license's platform access", () => {
     expect(
       isPlatformAvailableForLicenses(
-        ["eag3f3a1", "business-premium"],
+        ["eag3f3", "business-premium"],
         "windows-11",
       ),
     ).toBe(true);
     expect(
       isPlatformAvailableForLicenses(
-        ["eag3f3a1", "business-premium"],
+        ["eag3f3", "business-premium"],
         "purview",
       ),
     ).toBe(true);
     expect(
       isPlatformAvailableForLicenses(
-        ["eag3f3a1", "business-premium"],
+        ["eag3f3", "business-premium"],
         "agent-security",
       ),
     ).toBe(false);
@@ -238,9 +265,10 @@ describe("Agent 365 prerequisite note", () => {
     "e5",
     "g5",
     "a5",
-    "eag3f3a1-defender",
-    "eag3f3a1-defender-purview",
-    "f1-defender-purview",
+    "eag3f3-defender",
+    "eag3f3-defender-purview",
+    "f1a1-defender",
+    "f1a1-defender-purview",
     "business-premium-defender-purview",
     "business-premium-defender",
   ] as const;
@@ -260,12 +288,12 @@ describe("Agent 365 prerequisite note", () => {
       "e5",
       "e7",
       "g7",
-      "eag3f3a1-defender",
-      "eag3f3a1-defender-purview",
+      "eag3f3-defender",
+      "eag3f3-defender-purview",
       "business-premium-defender",
       "business-premium-defender-purview",
-      "f1-defender",
-      "f1-defender-purview",
+      "f1a1-defender",
+      "f1a1-defender-purview",
     ] as const)("does not show for %s because Defender for Endpoint is included", (licenseId) => {
       expect(requiresLinuxDesktopLicenseNote(licenseId, "linux-desktop")).toBe(false);
     });
@@ -273,18 +301,18 @@ describe("Agent 365 prerequisite note", () => {
     it.each([
       "business-premium",
       "business-premium-purview",
-      "eag3f3a1",
-      "eag3f3a1-purview",
+      "eag3f3",
+      "eag3f3-purview",
       "a5",
       "g5",
-      "f1",
+      "f1a1",
     ] as const)("shows for %s because Defender for Endpoint Plan 2 is additional", (licenseId) => {
       expect(requiresLinuxDesktopLicenseNote(licenseId, "linux-desktop")).toBe(true);
     });
 
     it("does not show for other platforms", () => {
       expect(
-        requiresLinuxDesktopLicenseNote("eag3f3a1", "linux-server"),
+        requiresLinuxDesktopLicenseNote("eag3f3", "linux-server"),
       ).toBe(false);
     });
 
@@ -297,7 +325,7 @@ describe("Agent 365 prerequisite note", () => {
       ).toBe(false);
       expect(
         requiresLinuxDesktopLicenseNoteForLicenses(
-          ["business-premium", "eag3f3a1"],
+          ["business-premium", "eag3f3"],
           "linux-desktop",
         ),
       ).toBe(true);
@@ -315,14 +343,14 @@ describe("Agent 365 prerequisite note", () => {
     });
 
     it("uses the Defender for Endpoint Server requirement for enterprise and frontline plans", () => {
-      expect(getWindowsServerLicenseNote("eag3f3a1-defender")).toContain(
+      expect(getWindowsServerLicenseNote("eag3f3-defender")).toContain(
         "Microsoft Defender for Endpoint Server",
       );
-      expect(getWindowsServerLicenseNote("eag3f3a1")).toContain(
+      expect(getWindowsServerLicenseNote("eag3f3")).toContain(
         "Microsoft Defender for Endpoint Server",
       );
       expect(
-        getWindowsServerLicenseNote("eag3f3a1-defender-purview"),
+        getWindowsServerLicenseNote("eag3f3-defender-purview"),
       ).toContain(
         "Microsoft Defender for Servers Plan 1 or Plan 2",
       );
@@ -335,7 +363,7 @@ describe("Agent 365 prerequisite note", () => {
       expect(getWindowsServerLicenseNote("g7")).toBe(
         getWindowsServerLicenseNote("e7"),
       );
-      expect(getWindowsServerLicenseNote("f1")).toBe(
+      expect(getWindowsServerLicenseNote("f1a1")).toBe(
         getWindowsServerLicenseNote("e7"),
       );
     });
@@ -363,10 +391,10 @@ describe("Agent 365 prerequisite note", () => {
     expect(requiresAgent365Note("e7", "agent-security")).toBe(false);
     expect(requiresAgent365Note("g7", "agent-security")).toBe(false);
     expect(requiresAgent365Note("business-premium", "agent-security")).toBe(false);
-    expect(requiresAgent365Note("eag3f3a1", "agent-security")).toBe(false);
-    expect(requiresAgent365Note("f1-defender", "agent-security")).toBe(false);
+    expect(requiresAgent365Note("eag3f3", "agent-security")).toBe(false);
+    expect(requiresAgent365Note("f1a1-defender", "agent-security")).toBe(true);
     expect(
-      requiresAgent365Note("f1-defender-purview", "agent-security"),
+      requiresAgent365Note("f1a1-defender-purview", "agent-security"),
     ).toBe(true);
   });
 
@@ -374,13 +402,13 @@ describe("Agent 365 prerequisite note", () => {
     it("shows limited Conditional Access guidance for frontline-only selections", () => {
       expect(
         getPlatformLicenseNoteForLicenses(
-          ["f1"],
+          ["f1a1"],
           "conditional-access",
         )?.title,
       ).toBe("Limited Conditional Access experience");
       expect(
         getPlatformLicenseNoteForLicenses(
-          ["f1", "e5"],
+          ["f1a1", "e5"],
           "conditional-access",
         ),
       ).toBeUndefined();
@@ -389,16 +417,16 @@ describe("Agent 365 prerequisite note", () => {
     it("shows limited Purview guidance for Business Premium and the merged base option", () => {
       expect(
         getPlatformLicenseNoteForLicenses(
-          ["business-premium", "eag3f3a1"],
+          ["business-premium", "eag3f3"],
           "purview",
         )?.title,
       ).toBe("Limited Microsoft Purview experience");
       expect(
-        getPlatformLicenseNoteForLicenses(["f1", "eag3f3a1"], "purview")?.title,
+        getPlatformLicenseNoteForLicenses(["f1a1", "eag3f3"], "purview")?.title,
       ).toBe("Limited Microsoft Purview experience");
       expect(
         getPlatformLicenseNoteForLicenses(
-          ["eag3f3a1", "eag3f3a1-defender-purview"],
+          ["eag3f3", "eag3f3-defender-purview"],
           "purview",
         ),
       ).toBeUndefined();
@@ -414,9 +442,9 @@ describe("Agent 365 prerequisite note", () => {
       expect(note?.message).toContain("Microsoft Entra ID P2");
       expect(note?.message).toContain("Agent 365");
       expect(
-        getPlatformLicenseNoteForLicenses(["eag3f3a1"], "conditional-access")
+        getPlatformLicenseNoteForLicenses(["eag3f3"], "conditional-access")
           ?.message,
-      ).toContain("E3/A3/G3/F3/A1 base licenses");
+      ).toContain("E3/A3/G3/F3 and F1/A1 base licenses");
       expect(
         getPlatformLicenseNoteForLicenses(
           ["business-premium", "e5"],
@@ -425,23 +453,6 @@ describe("Agent 365 prerequisite note", () => {
       ).toBeUndefined();
     });
 
-    it.each(["windows-11", "macos", "ios-ipados", "android"] as const)(
-      "shows limited endpoint guidance for F1 on %s",
-      (platformId) => {
-        expect(
-          getPlatformLicenseNoteForLicenses(["f1"], platformId)?.title,
-        ).toBe("Limited endpoint policy coverage");
-      },
-    );
-
-    it("removes limited endpoint guidance when Defender Suite is selected", () => {
-      expect(
-        getPlatformLicenseNoteForLicenses(
-          ["f1", "eag3f3a1-defender"],
-          "windows-11",
-        ),
-      ).toBeUndefined();
-    });
   });
 
   it("does not show for other platforms", () => {
