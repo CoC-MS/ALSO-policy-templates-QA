@@ -62,7 +62,7 @@ function StepIndicator({ step }: { step: Step }) {
     <div className="steps" aria-label="Progress">
       <div className="step-item active">
         <span aria-hidden="true">1</span>
-        <strong>License(s)</strong>
+        <strong>Licenses</strong>
       </div>
       <div className="step-line" aria-hidden="true" />
       <div className={`step-item ${platformActive ? "active" : ""}`}>
@@ -146,7 +146,7 @@ function App() {
           {step === "license" && (
             <section aria-labelledby="main-title">
               <div className="eyebrow">Find your security policy templates</div>
-              <h1 id="main-title" tabIndex={-1}>Which Microsoft 365 license(s) do you have today?</h1>
+              <h1 id="main-title" tabIndex={-1}>Which Microsoft 365 licenses do you have today?</h1>
               <p className="intro">Select all your current licenses to see which ALSO security policy templates are available to your organization.</p>
               <div className="license-section" aria-labelledby="enterprise-heading">
                 <h2 id="enterprise-heading">Enterprise</h2>
@@ -156,18 +156,17 @@ function App() {
                 <h2 id="smb-heading">SMB</h2>
                 <LicenseGrid items={smbLicenses} selected={selectedLicenses} onToggle={toggleLicense} />
               </div>
-              <div className="actions license-actions">
-                <button
-                  className="button primary"
-                  type="button"
-                  disabled={selectedLicenses.length === 0}
-                  onClick={continueFromLicenses}
-                >
-                  {selectedLicenses.length === 0
-                    ? "Select at least one license"
-                    : `Continue with ${selectedLicenses.length} license${selectedLicenses.length === 1 ? "" : "s"}`} &rarr;
-                </button>
-              </div>
+              {selectedLicenses.length > 0 && (
+                <div className="actions license-actions">
+                  <button
+                    className="button primary"
+                    type="button"
+                    onClick={continueFromLicenses}
+                  >
+                    Continue with {selectedLicenses.length} license{selectedLicenses.length === 1 ? "" : "s"} &rarr;
+                  </button>
+                </div>
+              )}
             </section>
           )}
 
@@ -230,7 +229,7 @@ function App() {
                 <div className="eyebrow">License prerequisite</div>
                 <h1 id="main-title" tabIndex={-1}>A higher license is needed</h1>
                 <p>{selectedLicenses.map((license) => license.name).join(" and ")} {selectedLicenses.length === 1 ? "does" : "do"} not meet the minimum prerequisite for these security policy templates.</p>
-                <p>The minimum supported license is <strong>Microsoft 365 Business Premium</strong>. No applicable templates are available for your selected license(s).</p>
+                <p>The minimum supported license is <strong>Microsoft 365 Business Premium</strong>. No applicable templates are available for your selected licenses.</p>
                 <button className="button primary" type="button" onClick={startOver}>&larr; Start over</button>
               </div>
             </section>
@@ -276,7 +275,7 @@ function App() {
                       {requiresLinuxDesktopLicenseNoteForLicenses(eligibleLicenseIds, platform.id) && (
                         <aside className="license-requirement-note">
                           <strong>Microsoft Defender for Endpoint Plan 2 required</strong>
-                          <p>Linux Desktop policies require a Microsoft Defender for Endpoint Plan 2 license. This license must be purchased and assigned in addition to the selected Microsoft 365 license(s).</p>
+                          <p>Linux Desktop policies require a Microsoft Defender for Endpoint Plan 2 license. This license must be purchased and assigned in addition to the selected Microsoft 365 licenses.</p>
                         </aside>
                       )}
                       {windowsServerNotes.map((note) => (
