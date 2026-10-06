@@ -159,3 +159,10 @@ export function togglePlatformSelection(
     ? selected.filter((item) => item.id !== platform.id)
     : [...selected, platform];
 }
+
+export function requiresAgent365Note(
+  licenseId: License["id"],
+  platformId: Platform["id"],
+): boolean {
+  return platformId === "agent-security" && licenseId !== "e7";
+}

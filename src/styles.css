@@ -417,6 +417,27 @@ h1 {
   line-height: 1.6;
 }
 
+.agent-license-note {
+  margin: 0 0 1.5rem;
+  padding: 1rem;
+  border: 1px solid #f0b45a;
+  border-radius: 0.5rem;
+  background: #fff8e8;
+  color: #713f12;
+}
+
+.agent-license-note strong {
+  display: block;
+  margin-bottom: 0.4rem;
+}
+
+.agent-license-note p {
+  margin: 0;
+  color: inherit;
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
 .recommendation-card .repository-link {
   margin-top: auto;
 }

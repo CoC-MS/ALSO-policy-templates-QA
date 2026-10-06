@@ -6,6 +6,7 @@ import {
   isLicenseEligible,
   licenses,
   platforms,
+  requiresAgent365Note,
   smbLicenses,
   togglePlatformSelection,
 } from "./catalog";
@@ -88,5 +89,17 @@ describe("platform selection", () => {
     ]);
 
     expect(togglePlatformSelection(twoSelected, windows)).toEqual([purview]);
+  });
+});
+
+describe("Agent 365 prerequisite note", () => {
+  it("shows for Agent Security on every license except E7", () => {
+    expect(requiresAgent365Note("business-premium", "agent-security")).toBe(true);
+    expect(requiresAgent365Note("e5", "agent-security")).toBe(true);
+    expect(requiresAgent365Note("e7", "agent-security")).toBe(false);
+  });
+
+  it("does not show for other platforms", () => {
+    expect(requiresAgent365Note("e5", "ai-security")).toBe(false);
   });
 });
