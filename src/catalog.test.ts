@@ -43,6 +43,7 @@ describe("platform repository routing", () => {
     ["windows-servers", "https://github.com/CoC-MS/ALSO-Microsoft-Security-WindowsServer"],
     ["ai-security", "https://github.com/CoC-MS/ALSO-Microsoft-Security-AI-Security-Windows11"],
     ["agent-security", "https://github.com/CoC-MS/ALSO-Microsoft-Security-Conditional-Access"],
+    ["conditional-access", "https://github.com/CoC-MS/ALSO-Microsoft-Security-Conditional-Access"],
     ["linux-desktop", "https://github.com/CoC-MS/ALSO-Microsoft-Security-Linux"],
     ["linux-server", "https://github.com/CoC-MS/ALSO-Microsoft-Security-Linux"],
     ["macos", "https://github.com/CoC-MS/ALSO-Microsoft-Security-MacOS"],
@@ -54,7 +55,7 @@ describe("platform repository routing", () => {
   });
 
   it("contains one route for every displayed platform", () => {
-    expect(platforms).toHaveLength(10);
+    expect(platforms).toHaveLength(11);
     expect(new Set(platforms.map((platform) => platform.id)).size).toBe(platforms.length);
   });
 

@@ -71,6 +71,13 @@ export const platforms = [
     description: "Conditional Access and Windows 11 security guidance for protecting AI agent access and operating environments.",
   },
   {
+    id: "conditional-access",
+    name: "Conditional Access",
+    shortLabel: "CA",
+    repository: "https://github.com/CoC-MS/ALSO-Microsoft-Security-Conditional-Access",
+    description: "Security policy templates and guidance for Microsoft Entra Conditional Access.",
+  },
+  {
     id: "linux-desktop",
     name: "Linux Desktop",
     shortLabel: "LD",
