@@ -68,6 +68,7 @@ export const platforms = [
       {
         name: "AI Security Windows 11",
         url: "https://github.com/CoC-MS/ALSO-Microsoft-Security-AI-Security-Windows11",
+        description: "This baseline delivers a hardened Windows 11 configuration that minimizes the risk of unauthorized third-party AI access while maintaining a productive user experience",
       },
     ],
     description: "A collection of Microsoft Entra Conditional Access policy templates, named locations, security groups and authentication context designed to help organizations accelerate secure deployments and implement Microsoft Security best practices with Zero trust principles.",
@@ -140,11 +141,12 @@ export function getPlatform(platformId: Platform["id"]): Platform {
 
 export function getPlatformRepositories(
   platform: Platform,
-): Array<{ name: string; url: string }> {
+): Array<{ name: string; url: string; description: string }> {
   const repositories = [
     {
       name: "repositoryLabel" in platform ? platform.repositoryLabel : platform.name,
       url: platform.repository,
+      description: platform.description,
     },
   ];
 

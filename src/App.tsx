@@ -192,39 +192,49 @@ function App() {
                 <p>Based on <strong>{selectedLicense.name}</strong>, here are the repositories for your {selectedPlatforms.length} selected {selectedPlatforms.length === 1 ? "platform" : "platforms"}.</p>
               </div>
               <div className="recommendation-grid">
-                {selectedPlatforms.map((platform) => (
-                  <article className="recommendation-card" key={platform.id}>
-                    <span className="choice-icon" aria-hidden="true">{platform.shortLabel}</span>
-                    <h2>{platform.name}</h2>
-                    <p>{platform.description}</p>
-                    {requiresAgent365Note(selectedLicense.id, platform.id) && (
-                      <aside className="license-requirement-note">
-                        <strong>Agent 365 license required</strong>
-                        <p>All Agent policies require an Agent 365 license to be assigned and Agent 365 portal onboarding to be completed before import. Otherwise, the policies will fail during import and display the following error message.</p>
-                      </aside>
-                    )}
-                    {platform.id === "windows-servers" &&
-                      getWindowsServerLicenseNote(selectedLicense.id) && (
+                {selectedPlatforms.map((platform) => {
+                  const repositories = getPlatformRepositories(platform);
+                  return (
+                    <article className="recommendation-card" key={platform.id}>
+                      <span className="choice-icon" aria-hidden="true">{platform.shortLabel}</span>
+                      <h2>{platform.name}</h2>
+                      <div className="repository-descriptions">
+                        {repositories.map((repository) => (
+                          <section key={repository.url}>
+                            {repositories.length > 1 && <h3>{repository.name}</h3>}
+                            <p>{repository.description}</p>
+                          </section>
+                        ))}
+                      </div>
+                      {requiresAgent365Note(selectedLicense.id, platform.id) && (
                         <aside className="license-requirement-note">
-                          <strong>Additional server license required</strong>
-                          <p>{getWindowsServerLicenseNote(selectedLicense.id)}</p>
+                          <strong>Agent 365 license required</strong>
+                          <p>All Agent policies require an Agent 365 license to be assigned and Agent 365 portal onboarding to be completed before import. Otherwise, the policies will fail during import and display the following error message.</p>
                         </aside>
                       )}
-                    <div className="repository-links">
-                      {getPlatformRepositories(platform).map((repository) => (
-                        <a
-                          className="button primary repository-link"
-                          href={repository.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          key={repository.url}
-                        >
-                          Open {repository.name} repository <ArrowIcon />
-                        </a>
-                      ))}
-                    </div>
-                  </article>
-                ))}
+                      {platform.id === "windows-servers" &&
+                        getWindowsServerLicenseNote(selectedLicense.id) && (
+                          <aside className="license-requirement-note">
+                            <strong>Additional server license required</strong>
+                            <p>{getWindowsServerLicenseNote(selectedLicense.id)}</p>
+                          </aside>
+                        )}
+                      <div className="repository-links">
+                        {repositories.map((repository) => (
+                          <a
+                            className="button primary repository-link"
+                            href={repository.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            key={repository.url}
+                          >
+                            Open {repository.name} repository <ArrowIcon />
+                          </a>
+                        ))}
+                      </div>
+                    </article>
+                  );
+                })}
               </div>
               <div className="actions centered">
                 <button className="button secondary" type="button" onClick={() => setStep("platform")}>&larr; Back</button>

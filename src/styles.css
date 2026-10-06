@@ -417,6 +417,15 @@ h1 {
   line-height: 1.6;
 }
 
+.repository-descriptions h3 {
+  margin: 1rem 0 0.35rem;
+  font-size: 0.95rem;
+}
+
+.repository-descriptions section:first-child h3 {
+  margin-top: 0;
+}
+
 .license-requirement-note {
   margin: 0 0 1.5rem;
   padding: 1rem;
