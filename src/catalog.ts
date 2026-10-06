@@ -39,7 +39,7 @@ export const platforms = [
     id: "windows-11",
     name: "Windows 11",
     shortLabel: "W11",
-    repository: "https://github.com/CoC-MS/security-template",
+    repository: "https://github.com/CoC-MS/ALSO-Microsoft-Security-Windows",
     description: "Security policy templates and implementation guidance for managed Windows 11 endpoints.",
   },
   {
@@ -109,7 +109,7 @@ export const platforms = [
     id: "android",
     name: "Android",
     shortLabel: "AND",
-    repository: "https://github.com/CoC-MS/security-template",
+    repository: "https://github.com/CoC-MS/ALSO-Microsoft-Security-Android",
     description: "Security policy templates and implementation guidance for managed Android devices.",
   },
   {

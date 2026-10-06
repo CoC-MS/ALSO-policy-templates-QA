@@ -39,7 +39,7 @@ describe("license eligibility", () => {
 
 describe("platform repository routing", () => {
   it.each([
-    ["windows-11", "https://github.com/CoC-MS/security-template"],
+    ["windows-11", "https://github.com/CoC-MS/ALSO-Microsoft-Security-Windows"],
     ["windows-servers", "https://github.com/CoC-MS/ALSO-Microsoft-Security-WindowsServer"],
     ["ai-security", "https://github.com/CoC-MS/ALSO-Microsoft-Security-AI-Security-Windows11"],
     ["agent-security", "https://github.com/CoC-MS/ALSO-Microsoft-Security-Conditional-Access"],
@@ -48,7 +48,7 @@ describe("platform repository routing", () => {
     ["linux-server", "https://github.com/CoC-MS/ALSO-Microsoft-Security-Linux"],
     ["macos", "https://github.com/CoC-MS/ALSO-Microsoft-Security-MacOS"],
     ["ios-ipados", "https://github.com/CoC-MS/ALSO-Microsoft-Security-iOSandiPadOS"],
-    ["android", "https://github.com/CoC-MS/security-template"],
+    ["android", "https://github.com/CoC-MS/ALSO-Microsoft-Security-Android"],
     ["purview", "https://github.com/CoC-MS/ALSO-Microsoft-Security-Purview"],
   ] as const)("routes %s correctly", (platformId, repository) => {
     expect(getPlatform(platformId).repository).toBe(repository);
