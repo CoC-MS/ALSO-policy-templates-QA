@@ -101,6 +101,14 @@ function App() {
             <span className="brand-divider" aria-hidden="true" />
             <span className="brand-product">ALSO Microsoft Security Policy Templates Navigator</span>
           </a>
+          <a
+            className="button secondary issue-link"
+            href="https://github.com/CoC-MS/ALSO-security-policy-templates-navigator/issues/new/choose"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Open issue <ArrowIcon />
+          </a>
         </div>
       </header>
 
