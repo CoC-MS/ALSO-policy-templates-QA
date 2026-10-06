@@ -267,11 +267,16 @@ const purviewUnavailableLicenseIds = new Set<License["id"]>([
   "f1-defender",
 ]);
 
-const purviewOnlyLicenseIds = new Set<License["id"]>([
-  "e3",
-  "a3",
-  "g3",
-  "eag3-purview",
+const standaloneEag3LicenseIds = new Set<License["id"]>(["e3", "a3", "g3"]);
+
+const standaloneEag3PlatformIds = new Set<Platform["id"]>([
+  "windows-11",
+  "windows-servers",
+  "ai-security",
+  "conditional-access",
+  "macos",
+  "ios-ipados",
+  "android",
 ]);
 
 export function isPlatformAvailableForLicense(
@@ -301,9 +306,16 @@ export function isPlatformAvailableForLicenses(
     );
   }
 
-  return eligibleLicenseIds.some(
-    (licenseId) => !purviewOnlyLicenseIds.has(licenseId),
-  );
+  return eligibleLicenseIds.some((licenseId) => {
+    if (licenseId === "eag3-purview") {
+      return false;
+    }
+
+    return (
+      !standaloneEag3LicenseIds.has(licenseId) ||
+      standaloneEag3PlatformIds.has(platformId)
+    );
+  });
 }
 
 const frontlineLicenseIds = new Set<License["id"]>([
@@ -315,9 +327,12 @@ const frontlineLicenseIds = new Set<License["id"]>([
   "f3-defender-purview",
 ]);
 
-const limitedBusinessPremiumConditionalAccessIds = new Set<License["id"]>([
+const limitedConditionalAccessLicenseIds = new Set<License["id"]>([
   "business-premium",
   "business-premium-purview",
+  "e3",
+  "a3",
+  "g3",
 ]);
 
 const limitedEndpointLicenseIds = new Set<License["id"]>(["f1", "f3"]);
@@ -351,7 +366,7 @@ export function getPlatformLicenseNoteForLicenses(
     const hasOnlyLimitedConditionalAccess = conditionalAccessLicenseIds.every(
       (licenseId) =>
         frontlineLicenseIds.has(licenseId) ||
-        limitedBusinessPremiumConditionalAccessIds.has(licenseId),
+        limitedConditionalAccessLicenseIds.has(licenseId),
     );
 
     if (
@@ -360,12 +375,12 @@ export function getPlatformLicenseNoteForLicenses(
     ) {
       if (
         conditionalAccessLicenseIds.some((licenseId) =>
-          limitedBusinessPremiumConditionalAccessIds.has(licenseId),
+          limitedConditionalAccessLicenseIds.has(licenseId),
         )
       ) {
         return {
           title: "Limited Conditional Access experience",
-          message: "Microsoft 365 Business Premium provides limited Conditional Access capabilities. Some policy templates require an additional Microsoft Entra ID P2 license and an Agent 365 license.",
+          message: "Microsoft 365 Business Premium and standalone E3, A3, and G3 licenses provide limited Conditional Access capabilities. Some policy templates require an additional Microsoft Entra ID P2 license and an Agent 365 license.",
         };
       }
 
@@ -415,6 +430,9 @@ const businessPremiumLicenseIds = new Set<License["id"]>([
 ]);
 
 const enterpriseServerLicenseIds = new Set<License["id"]>([
+  "e3",
+  "a3",
+  "g3",
   "eag3-defender",
   "eag3-defender-purview",
   "e5",

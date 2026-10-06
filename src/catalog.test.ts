@@ -182,29 +182,27 @@ describe("license selection", () => {
     ).toBe(true);
   });
 
-  it("allows standalone E3 to access only Purview policies", () => {
-    const available = platforms
-      .filter((platform) => isPlatformAvailableForLicense("e3", platform.id))
-      .map((platform) => platform.id);
+  it.each(["e3", "a3", "g3"] as const)(
+    "gives standalone %s the requested Business Premium-equivalent access",
+    (licenseId) => {
+      const available = platforms
+        .filter((platform) =>
+          isPlatformAvailableForLicense(licenseId, platform.id),
+        )
+        .map((platform) => platform.id);
 
-    expect(available).toEqual(["purview"]);
-  });
-
-  it("allows standalone A3 to access only Purview policies", () => {
-    const available = platforms
-      .filter((platform) => isPlatformAvailableForLicense("a3", platform.id))
-      .map((platform) => platform.id);
-
-    expect(available).toEqual(["purview"]);
-  });
-
-  it("allows standalone G3 to access only Purview policies", () => {
-    const available = platforms
-      .filter((platform) => isPlatformAvailableForLicense("g3", platform.id))
-      .map((platform) => platform.id);
-
-    expect(available).toEqual(["purview"]);
-  });
+      expect(available).toEqual([
+        "windows-11",
+        "windows-servers",
+        "ai-security",
+        "conditional-access",
+        "macos",
+        "ios-ipados",
+        "android",
+        "purview",
+      ]);
+    },
+  );
 
   it("gives the shared E3/A3/G3 Purview Suite full Purview-only access", () => {
     const available = platforms
@@ -219,7 +217,7 @@ describe("license selection", () => {
     ).toBeUndefined();
   });
 
-  it("combines E3 Purview access with another license's platform access", () => {
+  it("combines standalone E3 access with another license's platform access", () => {
     expect(
       isPlatformAvailableForLicenses(["e3", "business-premium"], "windows-11"),
     ).toBe(true);
@@ -326,6 +324,15 @@ describe("Agent 365 prerequisite note", () => {
       expect(getWindowsServerLicenseNote("eag3-defender")).toContain(
         "Microsoft Defender for Endpoint Server",
       );
+      expect(getWindowsServerLicenseNote("e3")).toContain(
+        "Microsoft Defender for Endpoint Server",
+      );
+      expect(getWindowsServerLicenseNote("a3")).toContain(
+        "Microsoft Defender for Endpoint Server",
+      );
+      expect(getWindowsServerLicenseNote("g3")).toContain(
+        "Microsoft Defender for Endpoint Server",
+      );
       expect(getWindowsServerLicenseNote("eag3-defender-purview")).toContain(
         "Microsoft Defender for Servers Plan 1 or Plan 2",
       );
@@ -347,7 +354,7 @@ describe("Agent 365 prerequisite note", () => {
     });
 
     it("does not show a Windows Server note for unrelated license families", () => {
-      expect(getWindowsServerLicenseNote("a3")).toBeUndefined();
+      expect(getWindowsServerLicenseNote("a5")).toBeUndefined();
       expect(getWindowsServerLicenseNote("g5")).toBeUndefined();
     });
 
@@ -369,6 +376,7 @@ describe("Agent 365 prerequisite note", () => {
     expect(requiresAgent365Note("e7", "agent-security")).toBe(false);
     expect(requiresAgent365Note("g7", "agent-security")).toBe(false);
     expect(requiresAgent365Note("business-premium", "agent-security")).toBe(false);
+    expect(requiresAgent365Note("e3", "agent-security")).toBe(false);
     expect(requiresAgent365Note("f1-defender", "agent-security")).toBe(false);
     expect(
       requiresAgent365Note("f1-defender-purview", "agent-security"),
@@ -409,7 +417,7 @@ describe("Agent 365 prerequisite note", () => {
       ).toBeUndefined();
     });
 
-    it("shows Business Premium Conditional Access prerequisites", () => {
+    it("shows Business Premium and standalone E3/A3/G3 Conditional Access prerequisites", () => {
       const note = getPlatformLicenseNoteForLicenses(
         ["business-premium"],
         "conditional-access",
@@ -418,6 +426,10 @@ describe("Agent 365 prerequisite note", () => {
       expect(note?.title).toBe("Limited Conditional Access experience");
       expect(note?.message).toContain("Microsoft Entra ID P2");
       expect(note?.message).toContain("Agent 365");
+      expect(
+        getPlatformLicenseNoteForLicenses(["e3"], "conditional-access")
+          ?.message,
+      ).toContain("standalone E3, A3, and G3");
       expect(
         getPlatformLicenseNoteForLicenses(
           ["business-premium", "e5"],
