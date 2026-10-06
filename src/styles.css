@@ -196,6 +196,18 @@ h1 {
   grid-template-columns: repeat(3, 1fr);
 }
 
+.license-section + .license-section {
+  margin-top: 2.75rem;
+}
+
+.license-section h2 {
+  margin: 0 0 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 1.25rem;
+  letter-spacing: -0.01em;
+}
+
 .platform-grid {
   grid-template-columns: repeat(2, 1fr);
   max-width: 850px;

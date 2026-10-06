@@ -17,6 +17,20 @@ export const licenses = [
   { id: "e3-defender-purview", name: "Microsoft 365 E3 + Defender and Purview Suite", eligible: true },
 ] as const;
 
+const smbLicenseIds = new Set([
+  "business-basic",
+  "business-standard",
+  "business-premium",
+]);
+
+export const smbLicenses = licenses.filter((license) =>
+  smbLicenseIds.has(license.id),
+);
+
+export const enterpriseLicenses = licenses.filter(
+  (license) => !smbLicenseIds.has(license.id),
+);
+
 export const platforms = [
   {
     id: "windows-11",

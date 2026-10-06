@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import {
   getPlatform,
-  licenses,
+  enterpriseLicenses,
   platforms,
+  smbLicenses,
   togglePlatformSelection,
   type License,
   type Platform,
@@ -15,6 +16,26 @@ function ArrowIcon() {
     <svg aria-hidden="true" viewBox="0 0 20 20" width="18" height="18">
       <path d="M7 4h9v9M16 4 5 15M4 7v9h9" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
     </svg>
+  );
+}
+
+function LicenseGrid({
+  items,
+  onChoose,
+}: {
+  items: readonly License[];
+  onChoose: (license: License) => void;
+}) {
+  return (
+    <div className="card-grid license-grid">
+      {items.map((license) => (
+        <button className="choice-card" type="button" key={license.id} onClick={() => onChoose(license)}>
+          <span className="choice-icon" aria-hidden="true">M365</span>
+          <span className="choice-name">{license.name}</span>
+          <span className="choice-arrow" aria-hidden="true">&rarr;</span>
+        </button>
+      ))}
+    </div>
   );
 }
 
@@ -88,14 +109,13 @@ function App() {
               <div className="eyebrow">Find your security templates</div>
               <h1 id="main-title" tabIndex={-1}>Which Microsoft 365 license do you have today?</h1>
               <p className="intro">Select your current license to see which ALSO security policy templates are available to your organization.</p>
-              <div className="card-grid license-grid" aria-label="Microsoft 365 licenses">
-                {licenses.map((license) => (
-                  <button className="choice-card" type="button" key={license.id} onClick={() => chooseLicense(license)}>
-                    <span className="choice-icon" aria-hidden="true">M365</span>
-                    <span className="choice-name">{license.name}</span>
-                    <span className="choice-arrow" aria-hidden="true">&rarr;</span>
-                  </button>
-                ))}
+              <div className="license-section" aria-labelledby="enterprise-heading">
+                <h2 id="enterprise-heading">Enterprise</h2>
+                <LicenseGrid items={enterpriseLicenses} onChoose={chooseLicense} />
+              </div>
+              <div className="license-section" aria-labelledby="smb-heading">
+                <h2 id="smb-heading">SMB</h2>
+                <LicenseGrid items={smbLicenses} onChoose={chooseLicense} />
               </div>
             </section>
           )}
