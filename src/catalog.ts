@@ -175,6 +175,27 @@ export function requiresAgent365Note(
   );
 }
 
+const linuxDesktopIncludedLicenseIds = new Set<License["id"]>([
+  "e5",
+  "e7",
+  "a3-defender",
+  "a3-defender-purview",
+  "business-premium-defender",
+  "business-premium-defender-purview",
+  "e3-defender",
+  "e3-defender-purview",
+]);
+
+export function requiresLinuxDesktopLicenseNote(
+  licenseId: License["id"],
+  platformId: Platform["id"],
+): boolean {
+  return (
+    platformId === "linux-desktop" &&
+    !linuxDesktopIncludedLicenseIds.has(licenseId)
+  );
+}
+
 const agentSecurityLicenseIds = new Set<License["id"]>([
   "business-premium-defender",
   "e3-defender",

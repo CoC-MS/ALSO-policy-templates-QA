@@ -9,6 +9,7 @@ import {
   licenses,
   platforms,
   requiresAgent365Note,
+  requiresLinuxDesktopLicenseNote,
   smbLicenses,
   togglePlatformSelection,
 } from "./catalog";
@@ -134,6 +135,38 @@ describe("Agent 365 prerequisite note", () => {
       .map((license) => license.id);
 
     expect(available).toEqual(eligibleLicenses);
+  });
+
+  describe("Linux Desktop prerequisite note", () => {
+    it.each([
+      "e5",
+      "e7",
+      "a3-defender",
+      "a3-defender-purview",
+      "business-premium-defender",
+      "business-premium-defender-purview",
+      "e3-defender",
+      "e3-defender-purview",
+    ] as const)("does not show for %s because Defender for Endpoint is included", (licenseId) => {
+      expect(requiresLinuxDesktopLicenseNote(licenseId, "linux-desktop")).toBe(false);
+    });
+
+    it.each([
+      "business-premium",
+      "business-premium-purview",
+      "e3",
+      "e3-purview",
+      "a3",
+      "a5",
+      "g3",
+      "g5",
+    ] as const)("shows for %s because Defender for Endpoint Plan 2 is additional", (licenseId) => {
+      expect(requiresLinuxDesktopLicenseNote(licenseId, "linux-desktop")).toBe(true);
+    });
+
+    it("does not show for other platforms", () => {
+      expect(requiresLinuxDesktopLicenseNote("e3", "linux-server")).toBe(false);
+    });
   });
 
   describe("Windows Server licensing notes", () => {

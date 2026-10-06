@@ -8,6 +8,7 @@ import {
   getPlatformRepositories,
   getWindowsServerLicenseNote,
   isPlatformAvailableForLicense,
+  requiresLinuxDesktopLicenseNote,
   togglePlatformSelection,
   type License,
   type Platform,
@@ -218,6 +219,12 @@ function App() {
                         <aside className="license-requirement-note">
                           <strong>Agent 365 license required</strong>
                           <p>All Agent policies require an Agent 365 license to be assigned and Agent 365 portal onboarding to be completed before import. Otherwise, the policies will fail during import and display the following error message.</p>
+                        </aside>
+                      )}
+                      {requiresLinuxDesktopLicenseNote(selectedLicense.id, platform.id) && (
+                        <aside className="license-requirement-note">
+                          <strong>Microsoft Defender for Endpoint Plan 2 required</strong>
+                          <p>Linux Desktop policies require a Microsoft Defender for Endpoint Plan 2 license. This license must be purchased and assigned in addition to the selected Microsoft 365 license.</p>
                         </aside>
                       )}
                       {platform.id === "windows-servers" &&
