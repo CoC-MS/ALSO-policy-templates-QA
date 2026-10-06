@@ -1,9 +1,6 @@
 export const licenses = [
-  { id: "e7", name: "Microsoft 365 E7", eligible: true },
-  { id: "g7", name: "Microsoft 365 G7", eligible: true },
-  { id: "e5", name: "Microsoft 365 E5", eligible: true },
-  { id: "g5", name: "Microsoft 365 G5", eligible: true },
-  { id: "a5", name: "Microsoft 365 A5", eligible: true },
+  { id: "e7g7", name: "Microsoft 365 E7/G7", eligible: true },
+  { id: "e5a5g5", name: "Microsoft 365 E5/A5/G5", eligible: true },
   { id: "eag3f3", name: "Microsoft 365 E3/A3/G3/F3", eligible: true },
   { id: "eag3f3-defender", name: "Microsoft 365 E3/A3/G3/F3 + Defender Suite", eligible: true },
   { id: "eag3f3-purview", name: "Microsoft 365 E3/A3/G3/F3 + Purview Suite", eligible: true },
@@ -195,12 +192,12 @@ export function getAgentSecurityLicenseNoteForLicenses(
   if (
     platformId !== "agent-security" ||
     !isPlatformAvailableForLicenses(licenseIds, platformId) ||
-    licenseIds.some((licenseId) => licenseId === "e7" || licenseId === "g7")
+    licenseIds.includes("e7g7")
   ) {
     return undefined;
   }
 
-  if (licenseIds.includes("e5")) {
+  if (licenseIds.includes("e5a5g5")) {
     return {
       title: "Agent 365, Microsoft 365 E7, or Microsoft 365 G7 license required",
       message: "Agent Security policies require either an Agent 365 license with Agent 365 portal onboarding completed, a Microsoft 365 E7 license, or a Microsoft 365 G7 license. Otherwise, the policies will fail during import and display an error message.",
@@ -214,9 +211,8 @@ export function getAgentSecurityLicenseNoteForLicenses(
 }
 
 const linuxDesktopIncludedLicenseIds = new Set<License["id"]>([
-  "e5",
-  "e7",
-  "g7",
+  "e5a5g5",
+  "e7g7",
   "eag3f3-defender",
   "eag3f3-defender-purview",
   "business-premium-defender",
@@ -247,11 +243,8 @@ const agentSecurityLicenseIds = new Set<License["id"]>([
   "business-premium-defender-purview",
   "eag3f3-defender",
   "eag3f3-defender-purview",
-  "e5",
-  "g5",
-  "a5",
-  "e7",
-  "g7",
+  "e5a5g5",
+  "e7g7",
   "f1a1-defender",
   "f1a1-defender-purview",
 ]);
@@ -379,9 +372,8 @@ const enterpriseServerLicenseIds = new Set<License["id"]>([
   "eag3f3",
   "eag3f3-defender",
   "eag3f3-defender-purview",
-  "e5",
-  "e7",
-  "g7",
+  "e5a5g5",
+  "e7g7",
   "f1a1",
   "f1a1-defender",
   "f1a1-defender-purview",
