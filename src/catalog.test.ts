@@ -3,6 +3,7 @@ import {
   getPlatform,
   enterpriseLicenses,
   getPlatformRepositories,
+  getWindowsServerLicenseNote,
   isLicenseEligible,
   isPlatformAvailableForLicense,
   licenses,
@@ -113,6 +114,37 @@ describe("Agent 365 prerequisite note", () => {
       .map((license) => license.id);
 
     expect(available).toEqual(eligibleLicenses);
+  });
+
+  describe("Windows Server licensing notes", () => {
+    it("uses the Defender for Business server requirement for Business Premium plans", () => {
+      expect(getWindowsServerLicenseNote("business-premium")).toContain(
+        "Microsoft Defender for Business servers",
+      );
+      expect(getWindowsServerLicenseNote("business-premium-defender-purview")).toContain(
+        "Microsoft Defender for Business servers",
+      );
+    });
+
+    it("uses the Defender for Endpoint Server requirement for E3, E5, and E7 plans", () => {
+      expect(getWindowsServerLicenseNote("e3")).toContain(
+        "Microsoft Defender for Endpoint Server",
+      );
+      expect(getWindowsServerLicenseNote("e3-defender-purview")).toContain(
+        "Microsoft Defender for Servers Plan 1 or Plan 2",
+      );
+      expect(getWindowsServerLicenseNote("e5")).toContain(
+        "Microsoft Defender for Endpoint Server",
+      );
+      expect(getWindowsServerLicenseNote("e7")).toContain(
+        "Microsoft Defender for Endpoint Server",
+      );
+    });
+
+    it("does not show a Windows Server note for unrelated license families", () => {
+      expect(getWindowsServerLicenseNote("a3")).toBeUndefined();
+      expect(getWindowsServerLicenseNote("g5")).toBeUndefined();
+    });
   });
 
   it("shows for supported Agent Security licenses except E7", () => {

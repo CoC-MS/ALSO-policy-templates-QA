@@ -6,6 +6,7 @@ import {
   requiresAgent365Note,
   smbLicenses,
   getPlatformRepositories,
+  getWindowsServerLicenseNote,
   isPlatformAvailableForLicense,
   togglePlatformSelection,
   type License,
@@ -197,11 +198,18 @@ function App() {
                     <h2>{platform.name}</h2>
                     <p>{platform.description}</p>
                     {requiresAgent365Note(selectedLicense.id, platform.id) && (
-                      <aside className="agent-license-note">
+                      <aside className="license-requirement-note">
                         <strong>Agent 365 license required</strong>
                         <p>All Agent policies require an Agent 365 license to be assigned and Agent 365 portal onboarding to be completed before import. Otherwise, the policies will fail during import and display the following error message.</p>
                       </aside>
                     )}
+                    {platform.id === "windows-servers" &&
+                      getWindowsServerLicenseNote(selectedLicense.id) && (
+                        <aside className="license-requirement-note">
+                          <strong>Additional server license required</strong>
+                          <p>{getWindowsServerLicenseNote(selectedLicense.id)}</p>
+                        </aside>
+                      )}
                     <div className="repository-links">
                       {getPlatformRepositories(platform).map((repository) => (
                         <a
