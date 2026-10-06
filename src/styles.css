@@ -108,6 +108,8 @@ h1:focus-visible {
 
 .issue-link {
   min-height: 2.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
   white-space: nowrap;
 }
 

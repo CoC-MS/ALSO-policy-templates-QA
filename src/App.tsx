@@ -107,7 +107,7 @@ function App() {
             target="_blank"
             rel="noopener noreferrer"
           >
-            Report problem <ArrowIcon />
+            Report problem
           </a>
         </div>
       </header>
