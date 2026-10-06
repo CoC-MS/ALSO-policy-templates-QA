@@ -21,6 +21,9 @@ const smbLicenseIds = new Set([
   "business-basic",
   "business-standard",
   "business-premium",
+  "business-premium-defender",
+  "business-premium-purview",
+  "business-premium-defender-purview",
 ]);
 
 export const smbLicenses = licenses.filter((license) =>

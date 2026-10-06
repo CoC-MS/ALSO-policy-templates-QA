@@ -20,13 +20,16 @@ describe("license eligibility", () => {
     expect(licenses.filter((license) => isLicenseEligible(license.id))).toHaveLength(14);
   });
 
-  it("groups only the three standalone Business plans under SMB", () => {
+  it("groups all Business plans under SMB", () => {
     expect(smbLicenses.map((license) => license.id)).toEqual([
       "business-basic",
       "business-standard",
       "business-premium",
+      "business-premium-defender",
+      "business-premium-purview",
+      "business-premium-defender-purview",
     ]);
-    expect(enterpriseLicenses).toHaveLength(13);
+    expect(enterpriseLicenses).toHaveLength(10);
     expect(
       new Set([...enterpriseLicenses, ...smbLicenses].map((license) => license.id)),
     ).toEqual(new Set(licenses.map((license) => license.id)));
