@@ -168,8 +168,8 @@ function App() {
                 <div className="result-icon blocked-icon" aria-hidden="true">!</div>
                 <div className="eyebrow">License prerequisite</div>
                 <h1 id="main-title" tabIndex={-1}>A higher license is needed</h1>
-                <p><strong>{selectedLicense.name}</strong> does not meet the minimum prerequisite for these security policy templates.</p>
-                <p>The minimum supported license is Microsoft 365 Business Premium. No applicable templates are available for your selected license.</p>
+                <p>{selectedLicense.name} does not meet the minimum prerequisite for these security policy templates.</p>
+                <p>The minimum supported license is <strong>Microsoft 365 Business Premium</strong>. No applicable templates are available for your selected license.</p>
                 <button className="button primary" type="button" onClick={startOver}>&larr; Start over</button>
               </div>
             </section>
