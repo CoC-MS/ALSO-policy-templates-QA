@@ -214,11 +214,11 @@ export function getWindowsServerLicenseNote(
   licenseId: License["id"],
 ): string | undefined {
   if (businessPremiumLicenseIds.has(licenseId)) {
-    return "Microsoft Defender for Business servers is also required for on-premises servers. For cloud or Azure Arc-enabled servers, a Microsoft Defender for Servers license through Defender for Cloud is required in addition to the selected Microsoft 365 license.";
+    return "A Microsoft Defender for Business servers license is also required for each on-premises server. For cloud or Azure Arc-enabled servers, a Microsoft Defender for Servers Plan 1 or Plan 2 subscription through Microsoft Defender for Cloud is required in addition to the selected Microsoft 365 license.";
   }
 
   if (enterpriseServerLicenseIds.has(licenseId)) {
-    return "Microsoft Defender for Endpoint Server is also required for on-premises servers. For cloud or Azure Arc-enabled servers, Microsoft Defender for Servers Plan 1 or Plan 2 through Defender for Cloud is required in addition to the selected Microsoft 365 license.";
+    return "A Microsoft Defender for Endpoint Server license is also required for each on-premises server. For cloud or Azure Arc-enabled servers, a Microsoft Defender for Servers Plan 1 or Plan 2 subscription through Microsoft Defender for Cloud is required in addition to the selected Microsoft 365 license.";
   }
 
   return undefined;

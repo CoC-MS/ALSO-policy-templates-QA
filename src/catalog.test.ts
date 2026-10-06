@@ -122,7 +122,7 @@ describe("Agent 365 prerequisite note", () => {
         "Microsoft Defender for Business servers",
       );
       expect(getWindowsServerLicenseNote("business-premium-defender-purview")).toContain(
-        "Microsoft Defender for Business servers",
+        "Microsoft Defender for Servers Plan 1 or Plan 2",
       );
     });
 
