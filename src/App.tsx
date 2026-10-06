@@ -50,7 +50,7 @@ function StepIndicator({ step }: { step: Step }) {
       <div className="step-line" aria-hidden="true" />
       <div className={`step-item ${platformActive ? "active" : ""}`}>
         <span aria-hidden="true">2</span>
-        <strong>Platform</strong>
+        <strong>Platform/Solution</strong>
       </div>
       <div className="step-line" aria-hidden="true" />
       <div className={`step-item ${step === "result" ? "active" : ""}`}>
