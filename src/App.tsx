@@ -93,10 +93,10 @@ function App() {
     <div className="app-shell">
       <header className="site-header">
         <div className="header-inner">
-          <a className="brand" href={import.meta.env.BASE_URL} aria-label="ALSO Policy Templates Guide home">
+          <a className="brand" href={import.meta.env.BASE_URL} aria-label="ALSO Microsoft Security Policy Templates Navigator home">
             <img className="brand-logo" src={`${import.meta.env.BASE_URL}also-logo.png`} alt="ALSO" />
             <span className="brand-divider" aria-hidden="true" />
-            <span className="brand-product">Security Policy Templates for Microsoft environments Navigator</span>
+            <span className="brand-product">ALSO Microsoft Security Policy Templates Navigator</span>
           </a>
         </div>
       </header>
