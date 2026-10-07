@@ -325,8 +325,8 @@ export function getLimitedExperienceNoteForLicenses(
     }
 
     return {
-      title: "Additional licenses required for full Conditional Access coverage",
-      message: `With ${selectedNames}, add Microsoft Entra ID Plan 2 for risky user and risky sign-in policy templates. Microsoft Entra ID Plan 2 is also included with the Microsoft Defender Suite add-on.`,
+      title: "Limited Conditional Access experience",
+      message: `With ${selectedNames}, add Microsoft Entra ID Plan 2 for risky user and risky sign-in policy templates. Microsoft Entra ID Plan 2 is also included with the Microsoft Defender Suite add-on. An Agent 365 license is required for all Agent 365 policy templates.`,
     };
   }
 
@@ -390,54 +390,11 @@ export function getLimitedExperienceNoteForLicenses(
 
     return {
       title: "Limited Microsoft Purview experience",
-      message: `With ${selectedNames}, add Microsoft Purview Suite to one of your selected qualifying base licenses to unlock the full Microsoft Purview policy-template experience.`,
+      message: `With ${selectedNames}, add the Microsoft Purview Suite add-on to unlock the full Microsoft Purview policy-template experience.`,
     };
   }
 
   return undefined;
-}
-
-export function getPlatformLicenseGuidance(
-  platformId: Platform["id"],
-): { title: string; message: string } | undefined {
-  const guidance: Partial<
-    Record<Platform["id"], { title: string; message: string }>
-  > = {
-    "conditional-access": {
-      title: "Conditional Access prerequisites",
-      message: "Conditional Access requires Microsoft Entra ID Plan 1 or Microsoft 365 Business Premium. Risky user and risky sign-in policies require Microsoft Entra ID Plan 2.",
-    },
-    "ai-security": {
-      title: "Windows 11 AI Security prerequisites",
-      message: "Requires Microsoft Intune Plan 1, Microsoft Entra ID Plan 1, and one of Microsoft Defender for Business, Microsoft Defender for Endpoint Plan 1, or Microsoft Defender for Endpoint Plan 2.",
-    },
-    "windows-11": {
-      title: "Windows prerequisites",
-      message: "Minimum: Microsoft Intune Plan 1, Microsoft Entra ID Plan 1, and Microsoft Defender for Business. Full experience requires the Microsoft Defender Suite add-on for Business Premium, E3, F3, or F1. Microsoft 365 E5 and Microsoft 365 E7 provide the equivalent full capabilities.",
-    },
-    macos: {
-      title: "macOS prerequisites",
-      message: "Minimum: Microsoft Intune Plan 1, Microsoft Entra ID Plan 1, and Microsoft Defender for Business. Full experience requires the Microsoft Defender Suite add-on for Business Premium, E3, F3, or F1. Microsoft 365 E5 and Microsoft 365 E7 provide the equivalent full capabilities.",
-    },
-    "linux-desktop": {
-      title: "Linux Desktop prerequisites",
-      message: "Minimum: Microsoft Intune Plan 1 and Microsoft Defender for Endpoint Plan 2. Full experience requires the Microsoft Defender Suite add-on for Business Premium, E3, F3, or F1. Microsoft 365 E5 and Microsoft 365 E7 provide the equivalent full capabilities.",
-    },
-    "ios-ipados": {
-      title: "iOS/iPadOS prerequisites",
-      message: "Requires Microsoft Intune Plan 1, Microsoft Entra ID Plan 1, and Microsoft Defender for Business.",
-    },
-    android: {
-      title: "Android prerequisites",
-      message: "Requires Microsoft Intune Plan 1, Microsoft Entra ID Plan 1, and Microsoft Defender for Business.",
-    },
-    purview: {
-      title: "Microsoft Purview prerequisites",
-      message: "Minimum: Microsoft 365 Business Premium. Full experience requires the Microsoft Purview Suite add-on for Business Premium, E3, F3, or F1. Microsoft 365 E5 and Microsoft 365 E7 provide the equivalent full capabilities.",
-    },
-  };
-
-  return guidance[platformId];
 }
 
 const businessPremiumLicenseIds = new Set<License["id"]>([

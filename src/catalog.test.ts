@@ -151,6 +151,9 @@ describe("Business Premium-only results", () => {
 
     expect(message).toContain("add Microsoft Entra ID Plan 2");
     expect(message).toContain("included with the Microsoft Defender Suite add-on");
+    expect(message).toContain(
+      "An Agent 365 license is required for all Agent 365 policy templates",
+    );
   });
 
   it.each([
@@ -168,7 +171,7 @@ describe("Business Premium-only results", () => {
   it("requires Purview Suite for full Purview coverage", () => {
     expect(
       getLimitedExperienceNoteForLicenses(licenseIds, "purview")?.message,
-    ).toContain("add Microsoft Purview Suite");
+    ).toContain("add the Microsoft Purview Suite add-on");
   });
 
   it("uses the Business server add-on message", () => {

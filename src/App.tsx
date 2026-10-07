@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import {
   getPlatform,
   getLimitedExperienceNoteForLicenses,
-  getPlatformLicenseGuidance,
   enterpriseLicenses,
   platforms,
   smbLicenses,
@@ -312,7 +311,6 @@ function App() {
               <div className="recommendation-grid">
                 {selectedPlatforms.map((platform) => {
                   const repositories = getPlatformRepositories(platform);
-                  const platformLicenseNote = getPlatformLicenseGuidance(platform.id);
                   const limitedExperienceNote =
                     getLimitedExperienceNoteForLicenses(
                       eligibleLicenseIds,
@@ -335,12 +333,6 @@ function App() {
                           </section>
                         ))}
                       </div>
-                      {platformLicenseNote && (
-                        <aside className="license-requirement-note">
-                          <strong>{platformLicenseNote.title}</strong>
-                          <p>{platformLicenseNote.message}</p>
-                        </aside>
-                      )}
                       {limitedExperienceNote && (
                         <aside className="license-requirement-note">
                           <strong>{limitedExperienceNote.title}</strong>
