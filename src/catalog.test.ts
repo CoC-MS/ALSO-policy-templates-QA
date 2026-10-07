@@ -14,6 +14,7 @@ import {
   smbLicenses,
   toggleLicenseSelection,
   togglePlatformSelection,
+  type Platform,
 } from "./catalog";
 
 describe("license catalog", () => {
@@ -240,7 +241,9 @@ describe("full-capability suite tier", () => {
               expect(limitedNotice?.message).toContain("Agent 365 license");
             } else if (platform.id === "purview") {
               expect(limitedNotice?.message).toContain(
-                "Microsoft Purview Suite add-on",
+                licenseId.startsWith("f")
+                  ? "Microsoft Purview Suite FLW add-on"
+                  : "Microsoft Purview Suite add-on",
               );
             } else {
               expect(limitedNotice).toBeUndefined();
@@ -291,6 +294,89 @@ describe("full-capability suite tier", () => {
               isPlatformAvailableForLicenses(licenseIds, platform.id),
             ).toBe(isPlatformAvailableForLicenses(["f1"], platform.id));
           }
+        });
+
+        describe("Purview Suite package tier", () => {
+          const purviewSuiteLicenseIds = [
+            "business-premium-purview",
+            "e3-purview",
+            "f3-purview",
+            "f1-purview",
+          ] as const;
+
+          it.each(purviewSuiteLicenseIds)(
+            "%s provides the base-tier repositories except Linux Desktop",
+            (licenseId) => {
+              expect(
+                platforms
+                  .filter((platform) =>
+                    isPlatformAvailableForLicense(licenseId, platform.id),
+                  )
+                  .map((platform) => platform.id),
+              ).toEqual([
+                "windows-11",
+                "windows-servers",
+                "ai-security",
+                "conditional-access",
+                "linux-server",
+                "macos",
+                "ios-ipados",
+                "android",
+                "purview",
+              ]);
+            },
+          );
+
+          it.each(purviewSuiteLicenseIds)(
+            "%s provides full Purview without a limitation",
+            (licenseId) => {
+              expect(
+                getLimitedExperienceNoteForLicenses([licenseId], "purview"),
+              ).toBeUndefined();
+            },
+          );
+
+          it.each(["business-premium-purview", "e3-purview"] as const)(
+            "%s uses standard Defender Suite upgrade messages",
+            (licenseId) => {
+              const messages = ["windows-11", "ai-security", "macos", "ios-ipados", "android"]
+                .map(
+                  (platformId) =>
+                    getLimitedExperienceNoteForLicenses(
+                      [licenseId],
+                      platformId as Platform["id"],
+                    )?.message ?? "",
+                )
+                .join(" ");
+
+              expect(messages).toContain("Microsoft Defender Suite add-on");
+              expect(messages).not.toContain("Defender Suite FLW");
+            },
+          );
+
+          it.each(["f3-purview", "f1-purview"] as const)(
+            "%s uses Defender Suite FLW upgrade messages",
+            (licenseId) => {
+              expect(
+                getLimitedExperienceNoteForLicenses([licenseId], "windows-11")
+                  ?.message,
+              ).toContain("Microsoft Defender Suite FLW add-on");
+            },
+          );
+
+          it("retains each family's server prerequisites", () => {
+            expect(getWindowsServerLicenseNotes(["business-premium-purview"])[0]).toContain(
+              "Microsoft Defender for Business servers",
+            );
+            expect(getWindowsServerLicenseNotes(["e3-purview"])[0]).toContain(
+              "The Microsoft Defender Suite add-on is required",
+            );
+            for (const licenseId of ["f3-purview", "f1-purview"] as const) {
+              expect(getWindowsServerLicenseNotes([licenseId])[0]).toContain(
+                "Microsoft Defender for Endpoint Plan 2 or the Microsoft Defender Suite FLW add-on",
+              );
+            }
+          });
         });
 
         it.each([
