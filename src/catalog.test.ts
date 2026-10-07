@@ -23,18 +23,27 @@ describe("license catalog", () => {
     ).toEqual(["business-standard", "business-basic"]);
   });
 
-  it("merges F3 into every E3/A3/G3 combination", () => {
+  it("keeps F3 separate from every E3/A3/G3 combination", () => {
     expect(
       enterpriseLicenses
         .filter((license) => license.id.startsWith("eag3"))
         .map((license) => license.name),
     ).toEqual([
-      "Microsoft 365 E3/A3/G3/F3",
-      "Microsoft 365 E3/A3/G3/F3 + Defender Suite",
-      "Microsoft 365 E3/A3/G3/F3 + Purview Suite",
-      "Microsoft 365 E3/A3/G3/F3 + Defender and Purview Suite",
+      "Microsoft 365 E3/A3/G3",
+      "Microsoft 365 E3/A3/G3 + Defender Suite",
+      "Microsoft 365 E3/A3/G3 + Purview Suite",
+      "Microsoft 365 E3/A3/G3 + Defender and Purview Suite",
     ]);
-    expect(licenses.some((license) => license.id.startsWith("f3"))).toBe(false);
+    expect(
+      enterpriseLicenses
+        .filter((license) => license.id.startsWith("f3"))
+        .map((license) => license.name),
+    ).toEqual([
+      "Microsoft 365 F3",
+      "Microsoft 365 F3 + Defender Suite FLW",
+      "Microsoft 365 F3 + Purview Suite FLW",
+      "Microsoft 365 F3 + Defender and Purview Suite FLW",
+    ]);
   });
 
   it("removes FLW from the combined F1/A1 label", () => {
