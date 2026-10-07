@@ -2,14 +2,14 @@ import { useEffect, useState } from "react";
 import {
   getPlatform,
   getAgentSecurityLicenseNoteForLicenses,
-  getPlatformLicenseNoteForLicenses,
+  getLimitedExperienceNoteForLicenses,
+  getPlatformLicenseGuidance,
   enterpriseLicenses,
   platforms,
   smbLicenses,
   getPlatformRepositories,
   getWindowsServerLicenseNotes,
   isPlatformAvailableForLicenses,
-  requiresLinuxDesktopLicenseNoteForLicenses,
   toggleLicenseSelection,
   togglePlatformSelection,
   type License,
@@ -317,10 +317,12 @@ function App() {
                     eligibleLicenseIds,
                     platform.id,
                   );
-                  const platformLicenseNote = getPlatformLicenseNoteForLicenses(
-                    eligibleLicenseIds,
-                    platform.id,
-                  );
+                  const platformLicenseNote = getPlatformLicenseGuidance(platform.id);
+                  const limitedExperienceNote =
+                    getLimitedExperienceNoteForLicenses(
+                      eligibleLicenseIds,
+                      platform.id,
+                    );
                   const windowsServerNotes =
                     platform.id === "windows-servers"
                       ? getWindowsServerLicenseNotes(eligibleLicenseIds)
@@ -349,10 +351,10 @@ function App() {
                           <p>{platformLicenseNote.message}</p>
                         </aside>
                       )}
-                      {requiresLinuxDesktopLicenseNoteForLicenses(eligibleLicenseIds, platform.id) && (
+                      {limitedExperienceNote && (
                         <aside className="license-requirement-note">
-                          <strong>Microsoft Defender for Endpoint Plan 2 required</strong>
-                          <p>Linux Desktop policies require a Microsoft Defender for Endpoint Plan 2 license. This license must be purchased and assigned in addition to the selected Microsoft 365 licenses.</p>
+                          <strong>{limitedExperienceNote.title}</strong>
+                          <p>{limitedExperienceNote.message}</p>
                         </aside>
                       )}
                       {windowsServerNotes.map((note) => (
