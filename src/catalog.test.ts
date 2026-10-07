@@ -23,16 +23,16 @@ describe("license catalog", () => {
     ).toEqual(["business-standard", "business-basic"]);
   });
 
-  it("keeps F3 separate from every E3/A3/G3 combination", () => {
+  it("keeps F3 separate from every E3 combination", () => {
     expect(
       enterpriseLicenses
-        .filter((license) => license.id.startsWith("eag3"))
+        .filter((license) => license.id === "e3" || license.id.startsWith("e3-"))
         .map((license) => license.name),
     ).toEqual([
-      "Microsoft 365 E3/A3/G3",
-      "Microsoft 365 E3/A3/G3 + Defender Suite",
-      "Microsoft 365 E3/A3/G3 + Purview Suite",
-      "Microsoft 365 E3/A3/G3 + Defender and Purview Suite",
+      "Microsoft 365 E3",
+      "Microsoft 365 E3 + Defender Suite",
+      "Microsoft 365 E3 + Purview Suite",
+      "Microsoft 365 E3 + Defender and Purview Suite",
     ]);
     expect(
       enterpriseLicenses
@@ -46,7 +46,7 @@ describe("license catalog", () => {
     ]);
   });
 
-  it("keeps F1 and A1 as separate four-option families", () => {
+  it("keeps F1 as a separate four-option family", () => {
     expect(
       enterpriseLicenses
         .filter((license) => license.id === "f1" || license.id.startsWith("f1-"))
@@ -57,20 +57,16 @@ describe("license catalog", () => {
       "Microsoft 365 F1 + Purview Suite FLW",
       "Microsoft 365 F1 + Defender and Purview Suite FLW",
     ]);
-    expect(
-      enterpriseLicenses
-        .filter((license) => license.id === "a1" || license.id.startsWith("a1-"))
-        .map((license) => license.name),
-    ).toEqual([
-      "Microsoft 365 A1",
-      "Microsoft 365 A1 + Defender Suite",
-      "Microsoft 365 A1 + Purview Suite",
-      "Microsoft 365 A1 + Defender and Purview Suite",
-    ]);
   });
 
   it("keeps the six Business plans under SMB", () => {
     expect(smbLicenses).toHaveLength(6);
+  });
+
+  it("contains no Education or Government license variants", () => {
+    expect(licenses.map((license) => license.name).join(" ")).not.toMatch(
+      /Microsoft 365 (?:A1|A3|A5|G3|G5|G7)/,
+    );
   });
 });
 
@@ -111,17 +107,17 @@ describe("selection helpers", () => {
   });
 
   it("toggles licenses", () => {
-    const e5 = licenses.find((license) => license.id === "e5a5g5")!;
-    const e7 = licenses.find((license) => license.id === "e7g7")!;
+    const e5 = licenses.find((license) => license.id === "e5")!;
+    const e7 = licenses.find((license) => license.id === "e7")!;
     const selected = toggleLicenseSelection(toggleLicenseSelection([], e5), e7);
 
-    expect(selected.map((license) => license.id)).toEqual(["e5a5g5", "e7g7"]);
+    expect(selected.map((license) => license.id)).toEqual(["e5", "e7"]);
     expect(toggleLicenseSelection(selected, e5)).toEqual([e7]);
   });
 
   it("unions capabilities across selected licenses", () => {
     expect(
-      isPlatformAvailableForLicenses(["business-premium", "e5a5g5"], "linux-desktop"),
+      isPlatformAvailableForLicenses(["business-premium", "e5"], "linux-desktop"),
     ).toBe(true);
   });
 });
@@ -185,10 +181,9 @@ describe("Business Premium-only results", () => {
 describe("full-capability suite tier", () => {
   const fullSuiteLicenseIds = [
     "business-premium-defender-purview",
-    "e5a5g5",
-    "eag3-defender-purview",
+    "e5",
+    "e3-defender-purview",
     "f1-defender-purview",
-    "a1-defender-purview",
   ] as const;
 
   it.each(fullSuiteLicenseIds)("%s provides every in-scope platform", (licenseId) => {
