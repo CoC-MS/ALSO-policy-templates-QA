@@ -333,8 +333,31 @@ describe("full-capability suite tier", () => {
 
         it("combines Defender and server prerequisites", () => {
           expect(getWindowsServerLicenseNotes(licenseIds)).toEqual([
-            "Microsoft Defender for Endpoint Plan 2 or the Microsoft Defender Suite add-on is required. A Microsoft Defender for Endpoint Server license is also required for each on-premises server. For cloud or Azure Arc-enabled servers, a Microsoft Defender for Servers Plan 1 or Plan 2 subscription through Microsoft Defender for Cloud is required in addition to the selected Microsoft 365 licenses.",
+            "The Microsoft Defender Suite add-on is required. A Microsoft Defender for Endpoint Server license is also required for each on-premises server. For cloud or Azure Arc-enabled servers, a Microsoft Defender for Servers Plan 1 or Plan 2 subscription through Microsoft Defender for Cloud is required in addition to the selected Microsoft 365 licenses.",
           ]);
+        });
+
+        it("never lists Defender for Endpoint Plan 2 as an E3 upgrade path", () => {
+          const relevantPlatforms = [
+            "windows-11",
+            "ai-security",
+            "macos",
+            "ios-ipados",
+            "android",
+          ] as const;
+          const messages = [
+            ...relevantPlatforms.map(
+              (platformId) =>
+                getLimitedExperienceNoteForLicenses(licenseIds, platformId)
+                  ?.message ?? "",
+            ),
+            ...getWindowsServerLicenseNotes(licenseIds),
+          ];
+
+          expect(messages.join(" ")).not.toContain("Defender for Endpoint Plan 2");
+          expect(messages.every((message) => message.includes("Defender Suite"))).toBe(
+            true,
+          );
         });
       });
 
