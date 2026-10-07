@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import {
   getPlatform,
   getPlatformExperienceForLicenses,
@@ -9,12 +9,16 @@ import {
   getPlatformRepositories,
   getWindowsServerLicenseNotes,
   isPlatformAvailableForLicenses,
-  searchPlatforms,
   toggleLicenseSelection,
   togglePlatformSelection,
   type License,
   type Platform,
 } from "./catalog";
+import {
+  searchRepositoryDocuments,
+  type RepositorySearchIndex,
+  type RepositorySearchResult,
+} from "./repositorySearch";
 
 type Step = "license" | "platform" | "blocked" | "result" | "overview";
 
@@ -86,9 +90,13 @@ function App() {
   const [selectedPlatforms, setSelectedPlatforms] = useState<Platform[]>([]);
   const [searchInput, setSearchInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<RepositorySearchResult[]>([]);
+  const [searchStatus, setSearchStatus] = useState<
+    "idle" | "loading" | "ready" | "error"
+  >("idle");
+  const [searchIndexDate, setSearchIndexDate] = useState("");
   const eligibleLicenses = selectedLicenses.filter((license) => license.eligible);
   const eligibleLicenseIds = eligibleLicenses.map((license) => license.id);
-  const overviewPlatforms = searchPlatforms(searchQuery);
 
   useEffect(() => {
     document.getElementById("main-title")?.focus();
@@ -127,6 +135,44 @@ function App() {
   function showOverview() {
     setOverviewReturnStep(step === "overview" ? overviewReturnStep : step);
     setStep("overview");
+  }
+
+  async function submitRepositorySearch(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const query = searchInput.trim();
+
+    if (!query) {
+      setSearchQuery("");
+      setSearchResults([]);
+      setSearchStatus("idle");
+      return;
+    }
+
+    setSearchQuery(query);
+    setSearchResults([]);
+    setSearchStatus("loading");
+
+    try {
+      const response = await fetch(
+        `${import.meta.env.BASE_URL}repository-index.json`,
+        { cache: "no-store" },
+      );
+      if (!response.ok) {
+        throw new Error(`Repository index request failed: ${response.status}`);
+      }
+
+      const index = await response.json() as RepositorySearchIndex;
+      if (!Array.isArray(index.documents)) {
+        throw new Error("Repository index is invalid.");
+      }
+
+      setSearchResults(searchRepositoryDocuments(index.documents, query));
+      setSearchIndexDate(index.generatedAt);
+      setSearchStatus("ready");
+    } catch (error) {
+      console.error("Unable to search repository contents.", error);
+      setSearchStatus("error");
+    }
   }
 
   return (
@@ -172,10 +218,7 @@ function App() {
               <form
                 className="repository-search"
                 role="search"
-                onSubmit={(event) => {
-                  event.preventDefault();
-                  setSearchQuery(searchInput.trim());
-                }}
+                onSubmit={submitRepositorySearch}
               >
                 <label htmlFor="repository-search">Search policy templates</label>
                 <div className="repository-search-controls">
@@ -194,6 +237,8 @@ function App() {
                       onClick={() => {
                         setSearchInput("");
                         setSearchQuery("");
+                        setSearchResults([]);
+                        setSearchStatus("idle");
                       }}
                     >
                       Clear
@@ -201,15 +246,60 @@ function App() {
                   )}
                 </div>
               </form>
-              {searchQuery && (
-                <p className="search-summary" aria-live="polite">
-                  {overviewPlatforms.length === 0
-                    ? `No repositories found for "${searchQuery}".`
-                    : `${overviewPlatforms.length} ${overviewPlatforms.length === 1 ? "repository section" : "repository sections"} found for "${searchQuery}".`}
-                </p>
-              )}
+              <div aria-live="polite">
+                {searchStatus === "loading" && (
+                  <p className="search-summary">Searching repository files...</p>
+                )}
+                {searchStatus === "error" && (
+                  <p className="search-summary search-error" role="alert">
+                    Repository search is temporarily unavailable. Please try again.
+                  </p>
+                )}
+                {searchStatus === "ready" && (
+                  <>
+                    <p className="search-summary">
+                      {searchResults.length === 0
+                        ? `No matching files found for "${searchQuery}".`
+                        : `${searchResults.length} matching ${searchResults.length === 1 ? "file" : "files"} found for "${searchQuery}".`}
+                      {searchIndexDate && (
+                        <span className="search-index-date">
+                          {" "}Index refreshed {new Date(searchIndexDate).toLocaleDateString()}.
+                        </span>
+                      )}
+                    </p>
+                    {searchResults.length > 0 && (
+                      <div className="repository-search-results">
+                        {searchResults.map((result) => (
+                          <article
+                            className="repository-search-result"
+                            key={`${result.repositoryName}:${result.path}`}
+                          >
+                            <div>
+                              <strong>{result.repositoryName}</strong>
+                              <code>{result.path}</code>
+                            </div>
+                            <p>{result.snippet}</p>
+                            <a
+                              className="button secondary"
+                              href={result.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              Open matching file <ArrowIcon />
+                            </a>
+                          </article>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+              <div className="overview-heading">
+                <h2>Repository overview</h2>
+                <p>Browse all repositories directly.</p>
+              </div>
               <div className="recommendation-grid">
-                {overviewPlatforms.map((platform) => {
+                {platforms.map((platform) => {
                   const repositories = getPlatformRepositories(platform);
                   return (
                     <article className="recommendation-card" key={platform.id}>

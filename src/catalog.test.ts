@@ -12,7 +12,6 @@ import {
   isPlatformAvailableForLicenses,
   licenses,
   platforms,
-  searchPlatforms,
   smbLicenses,
   toggleLicenseSelection,
   togglePlatformSelection,
@@ -123,28 +122,6 @@ describe("selection helpers", () => {
 
     expect(selected.map((platform) => platform.id)).toEqual(["windows-11", "purview"]);
     expect(togglePlatformSelection(selected, windows)).toEqual([purview]);
-  });
-
-  describe("repository search", () => {
-    it.each([
-      ["Phishing Resistant MFA", ["conditional-access"]],
-      ["Device Code Flow", ["conditional-access"]],
-      ["App Control", ["windows-11"]],
-      ["BitLocker", ["windows-11"]],
-      ["Agent", ["agent-security"]],
-    ] as const)("maps %s to the right repository section", (query, expectedIds) => {
-      expect(searchPlatforms(query).map((platform) => platform.id)).toEqual(
-        expectedIds,
-      );
-    });
-
-    it("returns every repository section for an empty search", () => {
-      expect(searchPlatforms("   ")).toEqual(platforms);
-    });
-
-    it("returns no results for an unknown policy", () => {
-      expect(searchPlatforms("not-a-real-policy")).toEqual([]);
-    });
   });
 
   describe("platform experience labels", () => {
