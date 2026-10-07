@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import {
   getPlatform,
+  getPlatformExperienceForLicenses,
   getLimitedExperienceNoteForLicenses,
   enterpriseLicenses,
   platforms,
@@ -8,6 +9,7 @@ import {
   getPlatformRepositories,
   getWindowsServerLicenseNotes,
   isPlatformAvailableForLicenses,
+  searchPlatforms,
   toggleLicenseSelection,
   togglePlatformSelection,
   type License,
@@ -82,8 +84,11 @@ function App() {
   const [overviewReturnStep, setOverviewReturnStep] = useState<Step>("license");
   const [selectedLicenses, setSelectedLicenses] = useState<License[]>([]);
   const [selectedPlatforms, setSelectedPlatforms] = useState<Platform[]>([]);
+  const [searchInput, setSearchInput] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const eligibleLicenses = selectedLicenses.filter((license) => license.eligible);
   const eligibleLicenseIds = eligibleLicenses.map((license) => license.id);
+  const overviewPlatforms = searchPlatforms(searchQuery);
 
   useEffect(() => {
     document.getElementById("main-title")?.focus();
@@ -164,8 +169,47 @@ function App() {
                 <h1 id="main-title" tabIndex={-1}>All security policy templates</h1>
                 <p>Browse every available platform and open its policy template repository directly.</p>
               </div>
+              <form
+                className="repository-search"
+                role="search"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  setSearchQuery(searchInput.trim());
+                }}
+              >
+                <label htmlFor="repository-search">Search policy templates</label>
+                <div className="repository-search-controls">
+                  <input
+                    id="repository-search"
+                    type="search"
+                    value={searchInput}
+                    onChange={(event) => setSearchInput(event.target.value)}
+                    placeholder="Try BitLocker, Device Code Flow, Agent..."
+                  />
+                  <button className="button primary" type="submit">Search</button>
+                  {searchQuery && (
+                    <button
+                      className="button secondary"
+                      type="button"
+                      onClick={() => {
+                        setSearchInput("");
+                        setSearchQuery("");
+                      }}
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+              </form>
+              {searchQuery && (
+                <p className="search-summary" aria-live="polite">
+                  {overviewPlatforms.length === 0
+                    ? `No repositories found for "${searchQuery}".`
+                    : `${overviewPlatforms.length} ${overviewPlatforms.length === 1 ? "repository section" : "repository sections"} found for "${searchQuery}".`}
+                </p>
+              )}
               <div className="recommendation-grid">
-                {platforms.map((platform) => {
+                {overviewPlatforms.map((platform) => {
                   const repositories = getPlatformRepositories(platform);
                   return (
                     <article className="recommendation-card" key={platform.id}>
@@ -253,6 +297,10 @@ function App() {
                   )
                   .map((platform) => {
                     const isSelected = selectedPlatforms.some((item) => item.id === platform.id);
+                    const experience = getPlatformExperienceForLicenses(
+                      eligibleLicenseIds,
+                      platform.id,
+                    );
                     return (
                       <button
                         className={`choice-card platform-card ${isSelected ? "selected" : ""}`}
@@ -262,7 +310,12 @@ function App() {
                         onClick={() => togglePlatform(platform)}
                       >
                         <span className="choice-icon" aria-hidden="true">{platform.shortLabel}</span>
-                        <span className="choice-name">{platform.name}</span>
+                        <span className="choice-details">
+                          <span className="choice-name">{platform.name}</span>
+                          <span className={`experience-badge ${experience}`}>
+                            {experience === "full" ? "Full experience" : "Limited experience"}
+                          </span>
+                        </span>
                         <span className="choice-check" aria-hidden="true">{isSelected ? "\u2713" : ""}</span>
                       </button>
                     );

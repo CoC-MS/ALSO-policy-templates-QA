@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   enterpriseLicenses,
   getLimitedExperienceNoteForLicenses,
+  getPlatformExperienceForLicenses,
   getPlatform,
   getPlatformRepositories,
   getWindowsServerLicenseNote,
@@ -11,6 +12,7 @@ import {
   isPlatformAvailableForLicenses,
   licenses,
   platforms,
+  searchPlatforms,
   smbLicenses,
   toggleLicenseSelection,
   togglePlatformSelection,
@@ -121,6 +123,54 @@ describe("selection helpers", () => {
 
     expect(selected.map((platform) => platform.id)).toEqual(["windows-11", "purview"]);
     expect(togglePlatformSelection(selected, windows)).toEqual([purview]);
+  });
+
+  describe("repository search", () => {
+    it.each([
+      ["Phishing Resistant MFA", ["conditional-access"]],
+      ["Device Code Flow", ["conditional-access"]],
+      ["App Control", ["windows-11"]],
+      ["BitLocker", ["windows-11"]],
+      ["Agent", ["agent-security"]],
+    ] as const)("maps %s to the right repository section", (query, expectedIds) => {
+      expect(searchPlatforms(query).map((platform) => platform.id)).toEqual(
+        expectedIds,
+      );
+    });
+
+    it("returns every repository section for an empty search", () => {
+      expect(searchPlatforms("   ")).toEqual(platforms);
+    });
+
+    it("returns no results for an unknown policy", () => {
+      expect(searchPlatforms("not-a-real-policy")).toEqual([]);
+    });
+  });
+
+  describe("platform experience labels", () => {
+    it("marks repositories with an upgrade notice as limited", () => {
+      expect(
+        getPlatformExperienceForLicenses(["business-premium"], "windows-11"),
+      ).toBe("limited");
+    });
+
+    it("marks fully entitled repositories as full", () => {
+      expect(getPlatformExperienceForLicenses(["e7"], "agent-security")).toBe(
+        "full",
+      );
+    });
+
+    it("marks Agent Security as limited when Agent 365 is required", () => {
+      expect(
+        getPlatformExperienceForLicenses(["e5"], "agent-security"),
+      ).toBe("limited");
+    });
+
+    it("marks server repositories with an additional license as limited", () => {
+      expect(
+        getPlatformExperienceForLicenses(["e7"], "windows-servers"),
+      ).toBe("limited");
+    });
   });
 
   it("toggles licenses", () => {

@@ -160,6 +160,111 @@ export function getPlatformRepositories(
   return repositories;
 }
 
+const platformSearchTerms: Record<Platform["id"], readonly string[]> = {
+  "windows-11": [
+    "App Control",
+    "AppLocker",
+    "BitLocker",
+    "Defender",
+    "endpoint security",
+    "firewall",
+  ],
+  "windows-servers": [
+    "Windows Server",
+    "Defender for Servers",
+    "Azure Arc",
+    "server security",
+  ],
+  "ai-security": [
+    "AI Security",
+    "Copilot",
+    "artificial intelligence",
+    "Windows AI",
+  ],
+  "agent-security": [
+    "Agent",
+    "Agent 365",
+    "AI agent",
+    "agent access",
+  ],
+  "conditional-access": [
+    "Phishing Resistant MFA",
+    "multifactor authentication",
+    "Device Code Flow",
+    "sign-in risk",
+    "user risk",
+    "Microsoft Entra",
+    "Zero Trust",
+  ],
+  "linux-desktop": [
+    "Linux Desktop",
+    "Defender for Endpoint Linux",
+    "Linux workstation",
+  ],
+  "linux-server": [
+    "Linux Server",
+    "Defender for Servers",
+    "Azure Arc Linux",
+  ],
+  macos: [
+    "macOS",
+    "MacBook",
+    "FileVault",
+    "Defender for Endpoint Mac",
+  ],
+  "ios-ipados": [
+    "iOS",
+    "iPadOS",
+    "iPhone",
+    "iPad",
+    "mobile application management",
+    "BYOD",
+  ],
+  android: [
+    "Android",
+    "mobile application management",
+    "work profile",
+    "BYOD",
+  ],
+  purview: [
+    "Purview",
+    "data loss prevention",
+    "DLP",
+    "information protection",
+    "retention",
+    "insider risk",
+  ],
+};
+
+function normalizeSearchText(value: string): string {
+  return value
+    .toLocaleLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+export function searchPlatforms(
+  query: string,
+  candidates: readonly Platform[] = platforms,
+): Platform[] {
+  const terms = normalizeSearchText(query).split(" ").filter(Boolean);
+
+  if (terms.length === 0) {
+    return [...candidates];
+  }
+
+  return candidates.filter((platform) => {
+    const repositoryText = getPlatformRepositories(platform)
+      .map((repository) => `${repository.name} ${repository.description}`)
+      .join(" ");
+    const searchText = normalizeSearchText(
+      `${platform.name} ${platform.description} ${repositoryText} ${platformSearchTerms[platform.id].join(" ")}`,
+    );
+
+    return terms.every((term) => searchText.includes(term));
+  });
+}
+
 export function togglePlatformSelection(
   selected: readonly Platform[],
   platform: Platform,
@@ -516,4 +621,17 @@ export function getWindowsServerLicenseNotes(
         .filter((note): note is string => note !== undefined),
     ),
   ];
+}
+
+export function getPlatformExperienceForLicenses(
+  licenseIds: readonly License["id"][],
+  platformId: Platform["id"],
+): "full" | "limited" {
+  const hasLimitedExperienceNote =
+    getLimitedExperienceNoteForLicenses(licenseIds, platformId) !== undefined;
+  const needsServerLicense =
+    (platformId === "windows-servers" || platformId === "linux-server") &&
+    getWindowsServerLicenseNotes(licenseIds).length > 0;
+
+  return hasLimitedExperienceNote || needsServerLicense ? "limited" : "full";
 }
