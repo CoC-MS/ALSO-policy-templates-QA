@@ -12,7 +12,7 @@ export const licenses = [
   { id: "f1", name: "Microsoft 365 F1", eligible: true },
   { id: "f1-defender", name: "Microsoft 365 F1 + Defender Suite FLW", eligible: true },
   { id: "f1-purview", name: "Microsoft 365 F1 + Purview Suite FLW", eligible: true },
-  { id: "f1-defender-purview", name: "Microsoft 365 F1 + Defender and Purview Suite FLW", eligible: true },
+  { id: "f1-defender-purview", name: "Microsoft 365 F1 + Defender and Purview Suite", eligible: true },
   { id: "business-premium-defender-purview", name: "Microsoft 365 Business Premium + Defender and Purview Suite", eligible: true },
   { id: "business-premium-defender", name: "Microsoft 365 Business Premium + Defender Suite", eligible: true },
   { id: "business-premium-purview", name: "Microsoft 365 Business Premium + Purview Suite", eligible: true },

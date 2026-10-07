@@ -55,7 +55,7 @@ describe("license catalog", () => {
       "Microsoft 365 F1",
       "Microsoft 365 F1 + Defender Suite FLW",
       "Microsoft 365 F1 + Purview Suite FLW",
-      "Microsoft 365 F1 + Defender and Purview Suite FLW",
+      "Microsoft 365 F1 + Defender and Purview Suite",
     ]);
   });
 
