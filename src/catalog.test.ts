@@ -133,10 +133,10 @@ describe("licensing prerequisite matrix", () => {
     }
   });
 
-  it("keeps Linux Desktop visible while identifying Endpoint P2 as a top-up", () => {
-    expect(isPlatformAvailableForLicense("business-premium", "linux-desktop")).toBe(true);
+  it("hides Linux Desktop unless Endpoint P2 is included", () => {
+    expect(isPlatformAvailableForLicense("business-premium", "linux-desktop")).toBe(false);
     expect(isPlatformAvailableForLicense("business-premium-defender", "linux-desktop")).toBe(true);
-    expect(isPlatformAvailableForLicense("eag3", "linux-desktop")).toBe(true);
+    expect(isPlatformAvailableForLicense("eag3", "linux-desktop")).toBe(false);
     expect(isPlatformAvailableForLicense("eag3-defender", "linux-desktop")).toBe(true);
     expect(isPlatformAvailableForLicense("f1a1-defender", "linux-desktop")).toBe(true);
     expect(isPlatformAvailableForLicense("e5a5g5", "linux-desktop")).toBe(true);
@@ -184,7 +184,6 @@ describe("result guidance", () => {
     ["windows-11", "Full experience: Microsoft Defender Suite"],
     ["macos", "Full experience: Microsoft Defender Suite"],
     ["linux-desktop", "Microsoft Defender for Endpoint Plan 2"],
-    ["linux-server", "Microsoft Defender for Business servers"],
     ["ios-ipados", "Microsoft Defender for Business"],
     ["android", "Microsoft Defender for Business"],
     ["purview", "Full experience: Microsoft Purview Suite"],
@@ -212,7 +211,7 @@ describe("result guidance", () => {
 
     expect(note?.message).toContain("With Microsoft 365 Business Premium");
     expect(note?.message).toContain("add Microsoft Entra ID Plan 2");
-    expect(note?.message).toContain("add an Agent 365 license");
+    expect(note?.message).toContain("Add an Agent 365 license");
   });
 
   it("only names Agent 365 when Entra ID Plan 2 is already covered", () => {
@@ -232,7 +231,7 @@ describe("result guidance", () => {
 
       expect(note?.title).toContain("Limited");
       expect(note?.message).toContain("With Microsoft 365 E3/A3/G3");
-      expect(note?.message).toContain("add Microsoft Defender Suite");
+      expect(note?.message).toContain("Microsoft Defender Suite add-on");
     },
   );
 
@@ -245,16 +244,6 @@ describe("result guidance", () => {
     ).toBeUndefined();
   });
 
-  it("names both valid Linux Desktop upgrade paths", () => {
-    const note = getLimitedExperienceNoteForLicenses(
-      ["business-premium"],
-      "linux-desktop",
-    );
-
-    expect(note?.message).toContain("add Microsoft Defender Suite");
-    expect(note?.message).toContain("Microsoft Defender for Endpoint Plan 2");
-  });
-
   it("names Purview Suite as the top-up for limited Purview selections", () => {
     const note = getLimitedExperienceNoteForLicenses(["eag3"], "purview");
 
@@ -263,5 +252,88 @@ describe("result guidance", () => {
     expect(
       getLimitedExperienceNoteForLicenses(["eag3-purview"], "purview"),
     ).toBeUndefined();
+  });
+});
+
+describe("Business Premium-only results", () => {
+  const businessPremiumOnly = ["business-premium"] as const;
+
+  it("shows every supported repository except Linux Desktop", () => {
+    expect(
+      platforms
+        .filter((platform) =>
+          isPlatformAvailableForLicenses(businessPremiumOnly, platform.id),
+        )
+        .map((platform) => platform.id),
+    ).toEqual([
+      "windows-11",
+      "windows-servers",
+      "ai-security",
+      "agent-security",
+      "conditional-access",
+      "linux-server",
+      "macos",
+      "ios-ipados",
+      "android",
+      "purview",
+    ]);
+  });
+
+  it("explains that Defender Suite includes Entra ID P2 for risky policies", () => {
+    const note = getLimitedExperienceNoteForLicenses(
+      businessPremiumOnly,
+      "conditional-access",
+    );
+
+    expect(note?.message).toContain("add Microsoft Entra ID Plan 2");
+    expect(note?.message).toContain(
+      "also included with the Microsoft Defender Suite add-on",
+    );
+    expect(note?.message).toContain("Add an Agent 365 license");
+  });
+
+  it.each([
+    "windows-11",
+    "ai-security",
+    "macos",
+    "ios-ipados",
+    "android",
+  ] as const)("requires the Defender Suite add-on for full %s coverage", (platformId) => {
+    expect(
+      getLimitedExperienceNoteForLicenses(businessPremiumOnly, platformId)
+        ?.message,
+    ).toBe(
+      `With Microsoft 365 Business Premium, add the Microsoft Defender Suite add-on to unlock the full ${getPlatform(platformId).name} policy-template experience.`,
+    );
+  });
+
+  it("requires Agent 365 for Agent Security", () => {
+    expect(
+      getAgentSecurityLicenseNoteForLicenses(
+        businessPremiumOnly,
+        "agent-security",
+      )?.message,
+    ).toContain("All Agent 365 policies require an Agent 365 license");
+  });
+
+  it("uses the Windows Server licensing message for both server repositories", () => {
+    const serverMessage = getWindowsServerLicenseNotes(businessPremiumOnly);
+
+    expect(serverMessage).toHaveLength(1);
+    expect(serverMessage[0]).toContain(
+      "Microsoft Defender for Business servers",
+    );
+    expect(serverMessage[0]).toContain(
+      "Microsoft Defender for Servers Plan 1 or Plan 2",
+    );
+  });
+
+  it("requires the Purview Suite add-on for full Purview coverage", () => {
+    expect(
+      getLimitedExperienceNoteForLicenses(businessPremiumOnly, "purview")
+        ?.message,
+    ).toBe(
+      "With Microsoft 365 Business Premium, add Microsoft Purview Suite to one of your selected qualifying base licenses to unlock the full Microsoft Purview policy-template experience.",
+    );
   });
 });

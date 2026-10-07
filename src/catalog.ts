@@ -264,8 +264,6 @@ const fullPurviewExperienceLicenseIds = new Set<License["id"]>([
   "f3-defender-purview",
   "f1a1-purview",
   "f1a1-defender-purview",
-  "business-premium",
-  "business-premium-defender",
   "business-premium-purview",
   "business-premium-defender-purview",
 ]);
@@ -329,7 +327,9 @@ export function isPlatformAvailableForLicenses(
   }
 
   if (platformId === "linux-desktop") {
-    return eligibleLicenseIds.length > 0;
+    return eligibleLicenseIds.some((licenseId) =>
+      fullDefenderExperienceLicenseIds.has(licenseId),
+    );
   }
 
   if (platformId === "windows-servers") {
@@ -340,7 +340,7 @@ export function isPlatformAvailableForLicenses(
 
   if (platformId === "linux-server") {
     return eligibleLicenseIds.some((licenseId) =>
-      fullDefenderExperienceLicenseIds.has(licenseId),
+      serverBaseLicenseIds.has(licenseId),
     );
   }
 
@@ -381,12 +381,13 @@ export function getLimitedExperienceNoteForLicenses(
     return {
       title: "Additional licenses required for full Conditional Access coverage",
       message: needsEntraIdP2
-        ? `With ${selectedNames}, add Microsoft Entra ID Plan 2 for risky user and risky sign-in policy templates. Also add an Agent 365 license for all Agent 365 policy templates.`
+        ? `With ${selectedNames}, add Microsoft Entra ID Plan 2 for risky user and risky sign-in policy templates. Microsoft Entra ID Plan 2 is also included with the Microsoft Defender Suite add-on. Add an Agent 365 license for all Agent 365 policy templates.`
         : `Your ${selectedNames} selection includes Microsoft Entra ID Plan 2 coverage for risky user and risky sign-in policies. Add an Agent 365 license for all Agent 365 policy templates.`,
     };
   }
 
   if (
+    platformId === "ai-security" ||
     platformId === "windows-11" ||
     platformId === "macos" ||
     platformId === "ios-ipados" ||
@@ -402,7 +403,7 @@ export function getLimitedExperienceNoteForLicenses(
 
     return {
       title: `Limited ${getPlatform(platformId).name} experience`,
-      message: `With ${selectedNames}, add Microsoft Defender Suite to one of your selected qualifying base licenses to unlock the full set of ${getPlatform(platformId).name} policy templates, including templates that require Microsoft Defender for Endpoint.`,
+      message: `With ${selectedNames}, add the Microsoft Defender Suite add-on to unlock the full ${getPlatform(platformId).name} policy-template experience.`,
     };
   }
 
@@ -464,10 +465,6 @@ export function getPlatformLicenseGuidance(
     "linux-desktop": {
       title: "Linux Desktop prerequisites",
       message: "Minimum: Microsoft Intune Plan 1 and Microsoft Defender for Endpoint Plan 2. Full experience: Microsoft Defender Suite with Business Premium, F1/A1, or Microsoft 365 E3/A3/G3/F3. Microsoft 365 E5/A5/G5 and Microsoft 365 E7/G7 provide the equivalent full capabilities.",
-    },
-    "linux-server": {
-      title: "Linux Server prerequisites",
-      message: "Requires Microsoft Intune Plan 1 and one of: Microsoft Defender for Business with Microsoft Defender for Business servers; Microsoft Defender for Endpoint with Microsoft Defender for Endpoint for servers; or Microsoft Defender for Servers Plan 1 or Plan 2.",
     },
     "ios-ipados": {
       title: "iOS/iPadOS prerequisites",

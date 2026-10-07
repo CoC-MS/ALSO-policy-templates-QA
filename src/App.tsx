@@ -324,7 +324,8 @@ function App() {
                       platform.id,
                     );
                   const windowsServerNotes =
-                    platform.id === "windows-servers"
+                    platform.id === "windows-servers" ||
+                    platform.id === "linux-server"
                       ? getWindowsServerLicenseNotes(eligibleLicenseIds)
                       : [];
                   return (
