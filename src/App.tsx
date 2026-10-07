@@ -16,7 +16,7 @@ import {
   type Platform,
 } from "./catalog";
 
-type Step = "license" | "platform" | "blocked" | "result";
+type Step = "license" | "platform" | "blocked" | "result" | "overview";
 
 function ArrowIcon() {
   return (
@@ -81,6 +81,7 @@ function StepIndicator({ step }: { step: Step }) {
 
 function App() {
   const [step, setStep] = useState<Step>("license");
+  const [overviewReturnStep, setOverviewReturnStep] = useState<Step>("license");
   const [selectedLicenses, setSelectedLicenses] = useState<License[]>([]);
   const [selectedPlatforms, setSelectedPlatforms] = useState<Platform[]>([]);
   const eligibleLicenses = selectedLicenses.filter((license) => license.eligible);
@@ -120,6 +121,11 @@ function App() {
     setStep("license");
   }
 
+  function showOverview() {
+    setOverviewReturnStep(step === "overview" ? overviewReturnStep : step);
+    setStep("overview");
+  }
+
   return (
     <div className="app-shell">
       <header className="site-header">
@@ -129,20 +135,80 @@ function App() {
             <span className="brand-divider" aria-hidden="true" />
             <span className="brand-product">ALSO Microsoft Security Policy Templates Navigator</span>
           </a>
-          <a
-            className="button secondary issue-link"
-            href="https://github.com/CoC-MS/ALSO-security-policy-templates-navigator/issues/new/choose"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Report problem
-          </a>
+          <div className="header-actions">
+            <button
+              className="button secondary issue-link"
+              type="button"
+              onClick={showOverview}
+            >
+              Overview
+            </button>
+            <a
+              className="button secondary issue-link"
+              href="https://github.com/CoC-MS/ALSO-security-policy-templates-navigator/issues/new/choose"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Report problem
+            </a>
+          </div>
         </div>
       </header>
 
       <main>
         <div className="content">
-          {step !== "blocked" && <StepIndicator step={step} />}
+          {step !== "blocked" && step !== "overview" && <StepIndicator step={step} />}
+
+          {step === "overview" && (
+            <section className="result-wrap" aria-labelledby="main-title">
+              <div className="result-heading">
+                <div className="eyebrow">Complete template catalog</div>
+                <h1 id="main-title" tabIndex={-1}>All security policy templates</h1>
+                <p>Browse every available platform and open its policy template repository directly.</p>
+              </div>
+              <div className="recommendation-grid">
+                {platforms.map((platform) => {
+                  const repositories = getPlatformRepositories(platform);
+                  return (
+                    <article className="recommendation-card" key={platform.id}>
+                      <span className="choice-icon" aria-hidden="true">{platform.shortLabel}</span>
+                      <h2>{platform.name}</h2>
+                      <div className="repository-descriptions">
+                        {repositories.map((repository) => (
+                          <section key={repository.url}>
+                            {repositories.length > 1 && <h3>{repository.name}</h3>}
+                            <p>{repository.description}</p>
+                          </section>
+                        ))}
+                      </div>
+                      <div className="repository-links">
+                        {repositories.map((repository) => (
+                          <a
+                            className="button primary repository-link"
+                            href={repository.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            key={repository.url}
+                          >
+                            Open {repository.name} repository <ArrowIcon />
+                          </a>
+                        ))}
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+              <div className="actions centered">
+                <button
+                  className="button secondary"
+                  type="button"
+                  onClick={() => setStep(overviewReturnStep)}
+                >
+                  &larr; Back
+                </button>
+              </div>
+            </section>
+          )}
 
           {step === "license" && (
             <section aria-labelledby="main-title">

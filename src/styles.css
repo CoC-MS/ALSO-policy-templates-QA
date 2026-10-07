@@ -112,6 +112,12 @@ h1:focus {
   white-space: nowrap;
 }
 
+.header-actions {
+  display: flex;
+  gap: 0.65rem;
+  align-items: center;
+}
+
 main {
   flex: 1;
 }
@@ -576,7 +582,11 @@ footer p {
 @media (max-width: 600px) {
   .header-inner {
     height: 4rem;
-    padding: 0 1rem;
+    padding: 0 0.5rem;
+  }
+
+  .brand-logo {
+    width: 5.5rem;
   }
 
   .brand-product {
@@ -588,8 +598,13 @@ footer p {
   }
 
   .issue-link {
-    padding: 0.6rem 0.75rem;
-    font-size: 0.85rem;
+    min-height: 2.4rem;
+    padding: 0.5rem 0.6rem;
+    font-size: 0.76rem;
+  }
+
+  .header-actions {
+    gap: 0.4rem;
   }
 
   .content {
