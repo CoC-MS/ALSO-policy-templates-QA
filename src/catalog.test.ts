@@ -46,10 +46,27 @@ describe("license catalog", () => {
     ]);
   });
 
-  it("removes FLW from the combined F1/A1 label", () => {
+  it("keeps F1 and A1 as separate four-option families", () => {
     expect(
-      licenses.find((license) => license.id === "f1a1-defender-purview")?.name,
-    ).toBe("Microsoft 365 F1/A1 + Defender and Purview Suite");
+      enterpriseLicenses
+        .filter((license) => license.id === "f1" || license.id.startsWith("f1-"))
+        .map((license) => license.name),
+    ).toEqual([
+      "Microsoft 365 F1",
+      "Microsoft 365 F1 + Defender Suite FLW",
+      "Microsoft 365 F1 + Purview Suite FLW",
+      "Microsoft 365 F1 + Defender and Purview Suite FLW",
+    ]);
+    expect(
+      enterpriseLicenses
+        .filter((license) => license.id === "a1" || license.id.startsWith("a1-"))
+        .map((license) => license.name),
+    ).toEqual([
+      "Microsoft 365 A1",
+      "Microsoft 365 A1 + Defender Suite",
+      "Microsoft 365 A1 + Purview Suite",
+      "Microsoft 365 A1 + Defender and Purview Suite",
+    ]);
   });
 
   it("keeps the six Business plans under SMB", () => {
@@ -170,7 +187,8 @@ describe("full-capability suite tier", () => {
     "business-premium-defender-purview",
     "e5a5g5",
     "eag3-defender-purview",
-    "f1a1-defender-purview",
+    "f1-defender-purview",
+    "a1-defender-purview",
   ] as const;
 
   it.each(fullSuiteLicenseIds)("%s provides every in-scope platform", (licenseId) => {
