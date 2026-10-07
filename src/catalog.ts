@@ -403,7 +403,6 @@ export function getLimitedExperienceNoteForLicenses(
 
 const businessPremiumLicenseIds = new Set<License["id"]>([
   "business-premium",
-  "business-premium-defender",
   "business-premium-purview",
 ]);
 
@@ -419,6 +418,7 @@ const enterpriseServerLicenseIds = new Set<License["id"]>([
   "f1",
   "f1-defender",
   "f1-defender-purview",
+  "business-premium-defender",
   "business-premium-defender-purview",
 ]);
 

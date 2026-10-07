@@ -208,6 +208,57 @@ describe("full-capability suite tier", () => {
       ).toHaveLength(platforms.length);
     });
 
+    describe("Defender Suite package tier", () => {
+      const defenderSuiteLicenseIds = [
+        "business-premium-defender",
+        "e3-defender",
+        "f3-defender",
+        "f1-defender",
+      ] as const;
+
+      it.each(defenderSuiteLicenseIds)(
+        "%s provides every in-scope repository",
+        (licenseId) => {
+          expect(
+            platforms.filter((platform) =>
+              isPlatformAvailableForLicense(licenseId, platform.id),
+            ),
+          ).toHaveLength(platforms.length);
+        },
+      );
+
+      it.each(defenderSuiteLicenseIds)(
+        "%s has notices only for AI Security, Purview, and both servers",
+        (licenseId) => {
+          for (const platform of platforms) {
+            const limitedNotice = getLimitedExperienceNoteForLicenses(
+              [licenseId],
+              platform.id,
+            );
+
+            if (platform.id === "ai-security") {
+              expect(limitedNotice?.message).toContain("Agent 365 license");
+            } else if (platform.id === "purview") {
+              expect(limitedNotice?.message).toContain(
+                "Microsoft Purview Suite add-on",
+              );
+            } else {
+              expect(limitedNotice).toBeUndefined();
+            }
+          }
+        },
+      );
+
+      it.each(defenderSuiteLicenseIds)(
+        "%s uses the Endpoint Server add-on message",
+        (licenseId) => {
+          expect(getWindowsServerLicenseNotes([licenseId])).toEqual([
+            "A Microsoft Defender for Endpoint Server license is also required for each on-premises server. For cloud or Azure Arc-enabled servers, a Microsoft Defender for Servers Plan 1 or Plan 2 subscription through Microsoft Defender for Cloud is required in addition to the selected Microsoft 365 licenses.",
+          ]);
+        },
+      );
+    });
+
     it("shows no limited-experience messages", () => {
       for (const platform of platforms) {
         expect(
