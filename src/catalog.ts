@@ -61,6 +61,21 @@ export const platforms = [
     description: "This baseline delivers a hardened Windows 11 configuration that minimizes the risk of unauthorized third-party AI access while maintaining a productive user experience",
   },
   {
+    id: "agent-security",
+    name: "Agent Security",
+    shortLabel: "AG",
+    repository: "https://github.com/CoC-MS/ALSO-Microsoft-Security-Conditional-Access",
+    repositoryLabel: "Conditional Access",
+    additionalRepositories: [
+      {
+        name: "AI Security Windows 11",
+        url: "https://github.com/CoC-MS/ALSO-Microsoft-Security-AI-Security-Windows11",
+        description: "Windows 11 policy templates for protecting AI agent operating environments.",
+      },
+    ],
+    description: "Conditional Access policy templates for protecting AI agent access.",
+  },
+  {
     id: "conditional-access",
     name: "Conditional Access",
     shortLabel: "CA",
@@ -131,10 +146,15 @@ export function getPlatformRepositories(
 ): Array<{ name: string; url: string; description: string }> {
   const repositories = [
     {
-      name: platform.name,
+      name: "repositoryLabel" in platform
+        ? platform.repositoryLabel
+        : platform.name,
       url: platform.repository,
       description: platform.description,
     },
+    ...("additionalRepositories" in platform
+      ? platform.additionalRepositories
+      : []),
   ];
 
   return repositories;
@@ -177,6 +197,15 @@ const aiSecurityLicenseIds = new Set<License["id"]>([
   "f1-defender",
   "f1-purview",
   "f1-defender-purview",
+]);
+
+const agentSecurityLicenseIds = new Set<License["id"]>([
+  "e7",
+  "e5",
+  "e3-defender-purview",
+  "f3-defender-purview",
+  "f1-defender-purview",
+  "business-premium-defender-purview",
 ]);
 
 const fullDefenderExperienceLicenseIds = new Set<License["id"]>([
@@ -261,6 +290,12 @@ export function isPlatformAvailableForLicenses(
   if (platformId === "ai-security") {
     return eligibleLicenseIds.some((licenseId) =>
       aiSecurityLicenseIds.has(licenseId),
+    );
+  }
+
+  if (platformId === "agent-security") {
+    return eligibleLicenseIds.some((licenseId) =>
+      agentSecurityLicenseIds.has(licenseId),
     );
   }
 
@@ -353,6 +388,21 @@ export function getLimitedExperienceNoteForLicenses(
         message: `With ${selectedNames}, add an Agent 365 license to unlock the full AI Security Windows 11 policy-template experience.`,
       };
     }
+  }
+
+  if (platformId === "agent-security") {
+    const supportedLicenseIds = eligibleLicenseIds.filter((licenseId) =>
+      agentSecurityLicenseIds.has(licenseId),
+    );
+
+    if (supportedLicenseIds.length === 0 || supportedLicenseIds.includes("e7")) {
+      return undefined;
+    }
+
+    return {
+      title: "Agent 365 license required for full Agent Security experience",
+      message: `With ${formatSelectedLicenseNames(supportedLicenseIds)}, add an Agent 365 license to unlock the full Agent Security policy-template experience.`,
+    };
   }
 
   if (

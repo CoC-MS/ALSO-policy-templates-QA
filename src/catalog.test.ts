@@ -76,6 +76,7 @@ describe("repository routing", () => {
     ["windows-11", "https://github.com/CoC-MS/ALSO-Microsoft-Security-Windows"],
     ["windows-servers", "https://github.com/CoC-MS/ALSO-Microsoft-Security-WindowsServer"],
     ["ai-security", "https://github.com/CoC-MS/ALSO-Microsoft-Security-AI-Security-Windows11"],
+    ["agent-security", "https://github.com/CoC-MS/ALSO-Microsoft-Security-Conditional-Access"],
     ["conditional-access", "https://github.com/CoC-MS/ALSO-Microsoft-Security-Conditional-Access"],
     ["linux-desktop", "https://github.com/CoC-MS/ALSO-Microsoft-Security-Linux"],
     ["linux-server", "https://github.com/CoC-MS/ALSO-Microsoft-Security-Linux"],
@@ -87,9 +88,24 @@ describe("repository routing", () => {
     expect(getPlatform(platformId).repository).toBe(repository);
   });
 
-  it("removes Agent Security from the navigator", () => {
-    expect(platforms.map((platform) => platform.id)).not.toContain("agent-security");
-    expect(platforms).toHaveLength(10);
+  it("restores Agent Security as the eleventh platform", () => {
+    expect(platforms.map((platform) => platform.id)).toContain("agent-security");
+    expect(platforms).toHaveLength(11);
+  });
+
+  it("routes Agent Security to Conditional Access and AI Security Windows 11", () => {
+    expect(getPlatformRepositories(getPlatform("agent-security"))).toEqual([
+      {
+        name: "Conditional Access",
+        url: "https://github.com/CoC-MS/ALSO-Microsoft-Security-Conditional-Access",
+        description: "Conditional Access policy templates for protecting AI agent access.",
+      },
+      {
+        name: "AI Security Windows 11",
+        url: "https://github.com/CoC-MS/ALSO-Microsoft-Security-AI-Security-Windows11",
+        description: "Windows 11 policy templates for protecting AI agent operating environments.",
+      },
+    ]);
   });
 
   it("returns one repository for ordinary platforms", () => {
@@ -187,6 +203,7 @@ describe("full-capability suite tier", () => {
     "business-premium-defender-purview",
     "e5",
     "e3-defender-purview",
+    "f3-defender-purview",
     "f1-defender-purview",
   ] as const;
 
@@ -218,15 +235,32 @@ describe("full-capability suite tier", () => {
       ] as const;
 
       it.each(defenderSuiteLicenseIds)(
-        "%s provides every in-scope repository",
+        "%s provides every repository except Agent Security",
         (licenseId) => {
           expect(
             platforms.filter((platform) =>
               isPlatformAvailableForLicense(licenseId, platform.id),
             ),
-          ).toHaveLength(platforms.length);
+          ).toHaveLength(platforms.length - 1);
         },
       );
+
+      it("makes Agent Security available only for E7 and the specified suite packages", () => {
+        expect(
+          licenses
+            .filter((license) =>
+              isPlatformAvailableForLicense(license.id, "agent-security"),
+            )
+            .map((license) => license.id),
+        ).toEqual([
+          "e7",
+          "e5",
+          "e3-defender-purview",
+          "f3-defender-purview",
+          "f1-defender-purview",
+          "business-premium-defender-purview",
+        ]);
+      });
 
       it.each(defenderSuiteLicenseIds)(
         "%s has notices only for AI Security, Purview, and both servers",
@@ -510,15 +544,31 @@ describe("full-capability suite tier", () => {
   });
 
   it.each(fullSuiteLicenseIds)(
-    "%s has no limited notice outside AI Security",
+    "%s has no limited notice outside AI Security and Agent Security",
     (licenseId) => {
       for (const platform of platforms.filter(
-        (item) => item.id !== "ai-security",
+        (item) =>
+          item.id !== "ai-security" && item.id !== "agent-security",
       )) {
         expect(
           getLimitedExperienceNoteForLicenses([licenseId], platform.id),
         ).toBeUndefined();
       }
+    },
+  );
+
+  it.each(fullSuiteLicenseIds)(
+    "%s requires Agent 365 for full Agent Security",
+    (licenseId) => {
+      const note = getLimitedExperienceNoteForLicenses(
+        [licenseId],
+        "agent-security",
+      );
+
+      expect(note?.title).toBe(
+        "Agent 365 license required for full Agent Security experience",
+      );
+      expect(note?.message).toContain("add an Agent 365 license");
     },
   );
 
