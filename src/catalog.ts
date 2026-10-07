@@ -315,6 +315,10 @@ export function getLimitedExperienceNoteForLicenses(
     return undefined;
   }
 
+  if (eligibleLicenseIds.includes("e7")) {
+    return undefined;
+  }
+
   if (platformId === "conditional-access") {
     const needsEntraIdP2 = !eligibleLicenseIds.some((licenseId) =>
       entraIdP2LicenseIds.has(licenseId),

@@ -197,6 +197,35 @@ describe("full-capability suite tier", () => {
     ).toHaveLength(platforms.length);
   });
 
+  describe("Microsoft 365 E7 results", () => {
+    const licenseIds = ["e7"] as const;
+
+    it("provides every in-scope repository", () => {
+      expect(
+        platforms.filter((platform) =>
+          isPlatformAvailableForLicenses(licenseIds, platform.id),
+        ),
+      ).toHaveLength(platforms.length);
+    });
+
+    it("shows no limited-experience messages", () => {
+      for (const platform of platforms) {
+        expect(
+          getLimitedExperienceNoteForLicenses(licenseIds, platform.id),
+        ).toBeUndefined();
+      }
+    });
+
+    it("uses the Endpoint Server add-on message for both server results", () => {
+      const notes = getWindowsServerLicenseNotes(licenseIds);
+
+      expect(notes).toHaveLength(1);
+      expect(notes[0]).toBe(
+        "A Microsoft Defender for Endpoint Server license is also required for each on-premises server. For cloud or Azure Arc-enabled servers, a Microsoft Defender for Servers Plan 1 or Plan 2 subscription through Microsoft Defender for Cloud is required in addition to the selected Microsoft 365 licenses.",
+      );
+    });
+  });
+
   it.each(fullSuiteLicenseIds)(
     "%s has no limited notice outside AI Security",
     (licenseId) => {
