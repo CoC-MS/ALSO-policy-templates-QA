@@ -173,6 +173,7 @@ const aiSecurityLicenseIds = new Set<License["id"]>([
   "business-premium-defender-purview",
   "business-premium",
   "business-premium-purview",
+  "f1",
   "f1-defender",
   "f1-defender-purview",
 ]);
@@ -310,6 +311,8 @@ export function getLimitedExperienceNoteForLicenses(
     isLicenseEligible(licenseId),
   );
   const selectedNames = formatSelectedLicenseNames(eligibleLicenseIds);
+  const isF1Only =
+    eligibleLicenseIds.length === 1 && eligibleLicenseIds[0] === "f1";
 
   if (eligibleLicenseIds.length === 0) {
     return undefined;
@@ -330,7 +333,7 @@ export function getLimitedExperienceNoteForLicenses(
 
     return {
       title: "Limited Conditional Access experience",
-      message: `With ${selectedNames}, add Microsoft Entra ID Plan 2 for risky user and risky sign-in policy templates. Microsoft Entra ID Plan 2 is also included with the Microsoft Defender Suite add-on. An Agent 365 license is required for all Agent 365 policy templates.`,
+      message: `With ${selectedNames}, add Microsoft Entra ID Plan 2 for risky user and risky sign-in policy templates. Microsoft Entra ID Plan 2 is also included with the Microsoft Defender Suite${isF1Only ? " FLW" : ""} add-on. An Agent 365 license is required for all Agent 365 policy templates.`,
     };
   }
 
@@ -364,7 +367,7 @@ export function getLimitedExperienceNoteForLicenses(
 
     return {
       title: `Limited ${getPlatform(platformId).name} experience`,
-      message: `With ${selectedNames}, add the Microsoft Defender Suite add-on to unlock the full ${getPlatform(platformId).name} policy-template experience.`,
+      message: `With ${selectedNames}, add the Microsoft Defender Suite${isF1Only ? " FLW" : ""} add-on to unlock the full ${getPlatform(platformId).name} policy-template experience.`,
     };
   }
 
@@ -394,7 +397,7 @@ export function getLimitedExperienceNoteForLicenses(
 
     return {
       title: "Limited Microsoft Purview experience",
-      message: `With ${selectedNames}, add the Microsoft Purview Suite add-on to unlock the full Microsoft Purview policy-template experience.`,
+      message: `With ${selectedNames}, add the Microsoft Purview Suite${isF1Only ? " FLW" : ""} add-on to unlock the full Microsoft Purview policy-template experience.`,
     };
   }
 
@@ -425,6 +428,10 @@ const enterpriseServerLicenseIds = new Set<License["id"]>([
 export function getWindowsServerLicenseNote(
   licenseId: License["id"],
 ): string | undefined {
+  if (licenseId === "f1") {
+    return "Microsoft Defender for Endpoint Plan 2 or the Microsoft Defender Suite FLW add-on is required. A Microsoft Defender for Endpoint Server license is also required for each on-premises server. For cloud or Azure Arc-enabled servers, a Microsoft Defender for Servers Plan 1 or Plan 2 subscription through Microsoft Defender for Cloud is required in addition to the selected Microsoft 365 licenses.";
+  }
+
   if (businessPremiumLicenseIds.has(licenseId)) {
     return "A Microsoft Defender for Business servers license is also required for each on-premises server. For cloud or Azure Arc-enabled servers, a Microsoft Defender for Servers Plan 1 or Plan 2 subscription through Microsoft Defender for Cloud is required in addition to the selected Microsoft 365 licenses.";
   }

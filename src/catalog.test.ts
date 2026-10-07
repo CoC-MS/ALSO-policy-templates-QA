@@ -259,6 +259,73 @@ describe("full-capability suite tier", () => {
       );
     });
 
+    describe("Microsoft 365 F1-only results", () => {
+      const licenseIds = ["f1"] as const;
+
+      it("mirrors Business Premium availability and excludes Linux Desktop", () => {
+        expect(
+          platforms
+            .filter((platform) =>
+              isPlatformAvailableForLicenses(licenseIds, platform.id),
+            )
+            .map((platform) => platform.id),
+        ).toEqual([
+          "windows-11",
+          "windows-servers",
+          "ai-security",
+          "conditional-access",
+          "linux-server",
+          "macos",
+          "ios-ipados",
+          "android",
+          "purview",
+        ]);
+      });
+
+      it.each([
+        "windows-11",
+        "ai-security",
+        "macos",
+        "ios-ipados",
+        "android",
+      ] as const)("uses Defender Suite FLW for limited %s coverage", (platformId) => {
+        const message = getLimitedExperienceNoteForLicenses(
+          licenseIds,
+          platformId,
+        )?.message;
+
+        expect(message).toContain("Microsoft Defender Suite FLW add-on");
+        expect(message).not.toContain("Microsoft Defender Suite add-on");
+      });
+
+      it("uses Defender Suite FLW in Conditional Access guidance", () => {
+        const message = getLimitedExperienceNoteForLicenses(
+          licenseIds,
+          "conditional-access",
+        )?.message;
+
+        expect(message).toContain("Microsoft Entra ID Plan 2");
+        expect(message).toContain("Microsoft Defender Suite FLW add-on");
+        expect(message).toContain("Agent 365 license");
+      });
+
+      it("uses Purview Suite FLW for the limited Purview experience", () => {
+        const message = getLimitedExperienceNoteForLicenses(
+          licenseIds,
+          "purview",
+        )?.message;
+
+        expect(message).toContain("Microsoft Purview Suite FLW add-on");
+        expect(message).not.toContain("Microsoft Purview Suite add-on");
+      });
+
+      it("combines the FLW and server prerequisites in one server message", () => {
+        expect(getWindowsServerLicenseNotes(licenseIds)).toEqual([
+          "Microsoft Defender for Endpoint Plan 2 or the Microsoft Defender Suite FLW add-on is required. A Microsoft Defender for Endpoint Server license is also required for each on-premises server. For cloud or Azure Arc-enabled servers, a Microsoft Defender for Servers Plan 1 or Plan 2 subscription through Microsoft Defender for Cloud is required in addition to the selected Microsoft 365 licenses.",
+        ]);
+      });
+    });
+
     it("shows no limited-experience messages", () => {
       for (const platform of platforms) {
         expect(
