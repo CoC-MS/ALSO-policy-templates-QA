@@ -282,6 +282,62 @@ describe("full-capability suite tier", () => {
         ]);
       });
 
+      describe("Microsoft 365 E3-only results", () => {
+        const licenseIds = ["e3"] as const;
+
+        it("mirrors F1 availability and excludes Linux Desktop", () => {
+          for (const platform of platforms) {
+            expect(
+              isPlatformAvailableForLicenses(licenseIds, platform.id),
+            ).toBe(isPlatformAvailableForLicenses(["f1"], platform.id));
+          }
+        });
+
+        it.each([
+          "windows-11",
+          "ai-security",
+          "macos",
+          "ios-ipados",
+          "android",
+        ] as const)("uses the standard Defender Suite for limited %s coverage", (platformId) => {
+          const message = getLimitedExperienceNoteForLicenses(
+            licenseIds,
+            platformId,
+          )?.message;
+
+          expect(message).toContain("Microsoft Defender Suite add-on");
+          expect(message).not.toContain("Defender Suite FLW");
+        });
+
+        it("uses standard Defender Suite in Conditional Access guidance", () => {
+          const message = getLimitedExperienceNoteForLicenses(
+            licenseIds,
+            "conditional-access",
+          )?.message;
+
+          expect(message).toContain("Microsoft Entra ID Plan 2");
+          expect(message).toContain("Microsoft Defender Suite add-on");
+          expect(message).not.toContain("Defender Suite FLW");
+          expect(message).toContain("Agent 365 license");
+        });
+
+        it("uses standard Purview Suite for limited Purview", () => {
+          const message = getLimitedExperienceNoteForLicenses(
+            licenseIds,
+            "purview",
+          )?.message;
+
+          expect(message).toContain("Microsoft Purview Suite add-on");
+          expect(message).not.toContain("Purview Suite FLW");
+        });
+
+        it("combines Defender and server prerequisites", () => {
+          expect(getWindowsServerLicenseNotes(licenseIds)).toEqual([
+            "Microsoft Defender for Endpoint Plan 2 or the Microsoft Defender Suite add-on is required. A Microsoft Defender for Endpoint Server license is also required for each on-premises server. For cloud or Azure Arc-enabled servers, a Microsoft Defender for Servers Plan 1 or Plan 2 subscription through Microsoft Defender for Cloud is required in addition to the selected Microsoft 365 licenses.",
+          ]);
+        });
+      });
+
       it.each([
         "windows-11",
         "ai-security",

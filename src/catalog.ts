@@ -432,6 +432,10 @@ export function getWindowsServerLicenseNote(
     return "Microsoft Defender for Endpoint Plan 2 or the Microsoft Defender Suite FLW add-on is required. A Microsoft Defender for Endpoint Server license is also required for each on-premises server. For cloud or Azure Arc-enabled servers, a Microsoft Defender for Servers Plan 1 or Plan 2 subscription through Microsoft Defender for Cloud is required in addition to the selected Microsoft 365 licenses.";
   }
 
+  if (licenseId === "e3") {
+    return "Microsoft Defender for Endpoint Plan 2 or the Microsoft Defender Suite add-on is required. A Microsoft Defender for Endpoint Server license is also required for each on-premises server. For cloud or Azure Arc-enabled servers, a Microsoft Defender for Servers Plan 1 or Plan 2 subscription through Microsoft Defender for Cloud is required in addition to the selected Microsoft 365 licenses.";
+  }
+
   if (businessPremiumLicenseIds.has(licenseId)) {
     return "A Microsoft Defender for Business servers license is also required for each on-premises server. For cloud or Azure Arc-enabled servers, a Microsoft Defender for Servers Plan 1 or Plan 2 subscription through Microsoft Defender for Cloud is required in addition to the selected Microsoft 365 licenses.";
   }
