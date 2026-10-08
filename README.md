@@ -8,18 +8,17 @@ An interactive guide that combines a customer's Microsoft 365 licenses to identi
 
 ```shell
 npm install
-npm run index:repositories
+npm run sync:metadata
 npm run dev
 ```
 
-Run `npm test` for the catalog and repository-search tests, and `npm run build`
+Run `npm test` for the catalog and repository-topic tests, and `npm run build`
 for a production build.
 
-## Repository search index
+## Repository metadata
 
-`npm run index:repositories` shallow-clones every publicly accessible linked
-policy-template repository and generates `public/repository-index.json` from
-its current text files. Internal repositories are deliberately excluded from
-the public index. The Pages workflow refreshes the index on every deployment
-and once per day, so browser searches return direct links to matching files
-without exposing a GitHub token or requiring a backend.
+`npm run sync:metadata` reads the GitHub About description and Topics for every
+linked repository and generates `public/repository-metadata.json`. The Pages
+workflow refreshes public repository metadata on every deployment and once per
+day. When its token cannot read an internal repository, the last synchronized
+metadata is retained. Overview search uses only these repository topics.

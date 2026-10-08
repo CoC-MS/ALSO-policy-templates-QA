@@ -15,10 +15,11 @@ import {
   type Platform,
 } from "./catalog";
 import {
-  searchRepositoryDocuments,
-  type RepositorySearchIndex,
-  type RepositorySearchResult,
-} from "./repositorySearch";
+  filterPlatformsByTopics,
+  getRepositoryMetadata,
+  type RepositoryMetadata,
+  type RepositoryMetadataIndex,
+} from "./repositoryMetadata";
 
 type Step = "license" | "platform" | "blocked" | "result" | "overview";
 
@@ -83,6 +84,46 @@ function StepIndicator({ step }: { step: Step }) {
   );
 }
 
+function RepositoryDetails({
+  repositories,
+  metadata,
+}: {
+  repositories: ReturnType<typeof getPlatformRepositories>;
+  metadata: readonly RepositoryMetadata[];
+}) {
+  return (
+    <div className="repository-descriptions">
+      {repositories.map((repository) => {
+        const repositoryMetadata = getRepositoryMetadata(
+          metadata,
+          repository.url,
+        );
+        const description =
+          repositoryMetadata?.description || repository.description;
+
+        return (
+          <section key={repository.url}>
+            {repositories.length > 1 && <h3>{repository.name}</h3>}
+            <p>{description}</p>
+            <div
+              className="repository-topics"
+              aria-label={`${repository.name} GitHub topics`}
+            >
+              {repositoryMetadata && repositoryMetadata.topics.length > 0 ? (
+                repositoryMetadata.topics.map((topic) => (
+                  <span className="repository-topic" key={topic}>{topic}</span>
+                ))
+              ) : (
+                <span className="repository-topic empty">No topics configured</span>
+              )}
+            </div>
+          </section>
+        );
+      })}
+    </div>
+  );
+}
+
 function App() {
   const [step, setStep] = useState<Step>("license");
   const [overviewReturnStep, setOverviewReturnStep] = useState<Step>("license");
@@ -90,17 +131,55 @@ function App() {
   const [selectedPlatforms, setSelectedPlatforms] = useState<Platform[]>([]);
   const [searchInput, setSearchInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<RepositorySearchResult[]>([]);
-  const [searchStatus, setSearchStatus] = useState<
-    "idle" | "loading" | "ready" | "error"
-  >("idle");
-  const [searchIndexDate, setSearchIndexDate] = useState("");
+  const [repositoryMetadata, setRepositoryMetadata] = useState<
+    RepositoryMetadataIndex
+  >({ generatedAt: "", repositories: [] });
+  const [metadataStatus, setMetadataStatus] = useState<
+    "loading" | "ready" | "error"
+  >("loading");
   const eligibleLicenses = selectedLicenses.filter((license) => license.eligible);
   const eligibleLicenseIds = eligibleLicenses.map((license) => license.id);
+  const overviewPlatforms = filterPlatformsByTopics(
+    platforms,
+    repositoryMetadata.repositories,
+    searchQuery,
+  );
 
   useEffect(() => {
     document.getElementById("main-title")?.focus();
   }, [step]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadRepositoryMetadata() {
+      try {
+        const response = await fetch(
+          `${import.meta.env.BASE_URL}repository-metadata.json`,
+          { cache: "no-store" },
+        );
+        if (!response.ok) {
+          throw new Error(`Repository metadata request failed: ${response.status}`);
+        }
+        const index = await response.json() as RepositoryMetadataIndex;
+        if (!Array.isArray(index.repositories)) {
+          throw new Error("Repository metadata is invalid.");
+        }
+        if (!cancelled) {
+          setRepositoryMetadata(index);
+          setMetadataStatus("ready");
+        }
+      } catch (error) {
+        console.error("Unable to load repository topics.", error);
+        if (!cancelled) setMetadataStatus("error");
+      }
+    }
+
+    void loadRepositoryMetadata();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   function toggleLicense(license: License) {
     setSelectedLicenses((current) => toggleLicenseSelection(current, license));
@@ -137,42 +216,9 @@ function App() {
     setStep("overview");
   }
 
-  async function submitRepositorySearch(event: FormEvent<HTMLFormElement>) {
+  function submitRepositorySearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const query = searchInput.trim();
-
-    if (!query) {
-      setSearchQuery("");
-      setSearchResults([]);
-      setSearchStatus("idle");
-      return;
-    }
-
-    setSearchQuery(query);
-    setSearchResults([]);
-    setSearchStatus("loading");
-
-    try {
-      const response = await fetch(
-        `${import.meta.env.BASE_URL}repository-index.json`,
-        { cache: "no-store" },
-      );
-      if (!response.ok) {
-        throw new Error(`Repository index request failed: ${response.status}`);
-      }
-
-      const index = await response.json() as RepositorySearchIndex;
-      if (!Array.isArray(index.documents)) {
-        throw new Error("Repository index is invalid.");
-      }
-
-      setSearchResults(searchRepositoryDocuments(index.documents, query));
-      setSearchIndexDate(index.generatedAt);
-      setSearchStatus("ready");
-    } catch (error) {
-      console.error("Unable to search repository contents.", error);
-      setSearchStatus("error");
-    }
+    setSearchQuery(searchInput.trim());
   }
 
   return (
@@ -227,7 +273,8 @@ function App() {
                     type="search"
                     value={searchInput}
                     onChange={(event) => setSearchInput(event.target.value)}
-                    placeholder="Try BitLocker, Device Code Flow, Agent..."
+                    placeholder="Search GitHub topics, for example agentsecurity..."
+                    disabled={metadataStatus !== "ready"}
                   />
                   <button className="button primary" type="submit">Search</button>
                   {searchQuery && (
@@ -237,8 +284,6 @@ function App() {
                       onClick={() => {
                         setSearchInput("");
                         setSearchQuery("");
-                        setSearchResults([]);
-                        setSearchStatus("idle");
                       }}
                     >
                       Clear
@@ -247,51 +292,25 @@ function App() {
                 </div>
               </form>
               <div aria-live="polite">
-                {searchStatus === "loading" && (
-                  <p className="search-summary">Searching repository files...</p>
+                {metadataStatus === "loading" && (
+                  <p className="search-summary">Loading GitHub topics...</p>
                 )}
-                {searchStatus === "error" && (
+                {metadataStatus === "error" && (
                   <p className="search-summary search-error" role="alert">
-                    Repository search is temporarily unavailable. Please try again.
+                    GitHub topics are temporarily unavailable.
                   </p>
                 )}
-                {searchStatus === "ready" && (
-                  <>
-                    <p className="search-summary">
-                      {searchResults.length === 0
-                        ? `No matching files found for "${searchQuery}".`
-                        : `${searchResults.length} matching ${searchResults.length === 1 ? "file" : "files"} found for "${searchQuery}".`}
-                      {searchIndexDate && (
-                        <span className="search-index-date">
-                          {" "}Index refreshed {new Date(searchIndexDate).toLocaleDateString()}.
-                        </span>
-                      )}
-                    </p>
-                    {searchResults.length > 0 && (
-                      <div className="repository-search-results">
-                        {searchResults.map((result) => (
-                          <article
-                            className="repository-search-result"
-                            key={`${result.repositoryName}:${result.path}`}
-                          >
-                            <div>
-                              <strong>{result.repositoryName}</strong>
-                              <code>{result.path}</code>
-                            </div>
-                            <p>{result.snippet}</p>
-                            <a
-                              className="button secondary"
-                              href={result.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              Open matching file <ArrowIcon />
-                            </a>
-                          </article>
-                        ))}
-                      </div>
+                {metadataStatus === "ready" && searchQuery && (
+                  <p className="search-summary">
+                    {overviewPlatforms.length === 0
+                      ? `No repository topics found for "${searchQuery}".`
+                      : `${overviewPlatforms.length} ${overviewPlatforms.length === 1 ? "repository section" : "repository sections"} found for "${searchQuery}".`}
+                    {repositoryMetadata.generatedAt && (
+                      <span className="search-index-date">
+                        {" "}Topics refreshed {new Date(repositoryMetadata.generatedAt).toLocaleDateString()}.
+                      </span>
                     )}
-                  </>
+                  </p>
                 )}
               </div>
               <div className="overview-heading">
@@ -299,20 +318,16 @@ function App() {
                 <p>Browse all repositories directly.</p>
               </div>
               <div className="recommendation-grid">
-                {platforms.map((platform) => {
+                {overviewPlatforms.map((platform) => {
                   const repositories = getPlatformRepositories(platform);
                   return (
                     <article className="recommendation-card" key={platform.id}>
                       <span className="choice-icon" aria-hidden="true">{platform.shortLabel}</span>
                       <h2>{platform.name}</h2>
-                      <div className="repository-descriptions">
-                        {repositories.map((repository) => (
-                          <section key={repository.url}>
-                            {repositories.length > 1 && <h3>{repository.name}</h3>}
-                            <p>{repository.description}</p>
-                          </section>
-                        ))}
-                      </div>
+                      <RepositoryDetails
+                        repositories={repositories}
+                        metadata={repositoryMetadata.repositories}
+                      />
                       <div className="repository-links">
                         {repositories.map((repository) => (
                           <a
@@ -468,14 +483,10 @@ function App() {
                     <article className="recommendation-card" key={platform.id}>
                       <span className="choice-icon" aria-hidden="true">{platform.shortLabel}</span>
                       <h2>{platform.name}</h2>
-                      <div className="repository-descriptions">
-                        {repositories.map((repository) => (
-                          <section key={repository.url}>
-                            {repositories.length > 1 && <h3>{repository.name}</h3>}
-                            <p>{repository.description}</p>
-                          </section>
-                        ))}
-                      </div>
+                      <RepositoryDetails
+                        repositories={repositories}
+                        metadata={repositoryMetadata.repositories}
+                      />
                       {limitedExperienceNote && (
                         <aside className="license-requirement-note">
                           <strong>{limitedExperienceNote.title}</strong>

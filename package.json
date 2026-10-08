@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "index:repositories": "node scripts/build-repository-index.mjs",
+    "sync:metadata": "node scripts/sync-repository-metadata.mjs",
     "test": "vitest run",
     "preview": "vite preview"
   },

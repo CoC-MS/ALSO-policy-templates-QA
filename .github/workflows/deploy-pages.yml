@@ -30,8 +30,10 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
-      - name: Refresh repository search index
-        run: npm run index:repositories
+      - name: Refresh repository metadata
+        run: npm run sync:metadata
+        env:
+          GH_TOKEN: ${{ github.token }}
       - name: Test
         run: npm test
       - name: Build
