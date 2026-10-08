@@ -12,3 +12,6 @@ Context (including AuthenticationContext), and NamedLocations folders. Counts
 refresh with the daily metadata sync; inaccessible repositories retain their
 last verified counts. No repository file contents are downloaded or published.
 The free-template message does not imply that Microsoft licenses are free.
+
+Purview contributes a fixed, user-confirmed count of 24 policy templates rather
+than a JSON-file count, since its templates are deployed through PowerShell.

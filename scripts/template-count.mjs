@@ -4,6 +4,13 @@ const excludedFolders = new Set([
   "namedlocations",
 ]);
 
+export function countRepositoryTemplates(repositoryName, tree) {
+  if (repositoryName === "ALSO-Microsoft-Security-Purview") {
+    return 24;
+  }
+  return countPolicyJsonFiles(tree);
+}
+
 export function countPolicyJsonFiles(tree) {
   if (tree.truncated) {
     throw new Error("Cannot count templates from a truncated GitHub tree.");

@@ -1,7 +1,19 @@
 import { describe, expect, it } from "vitest";
-import { countPolicyJsonFiles } from "./template-count.mjs";
+import { countPolicyJsonFiles, countRepositoryTemplates } from "./template-count.mjs";
 
 describe("policy JSON file count", () => {
+  it("includes the specified 24 Purview templates even without JSON files", () => {
+    expect(countRepositoryTemplates("ALSO-Microsoft-Security-Purview", {
+      tree: [],
+    })).toBe(24);
+  });
+
+  it("continues counting JSON files for other repositories", () => {
+    expect(countRepositoryTemplates("ALSO-Microsoft-Security-Windows", {
+      tree: [{ type: "blob", path: "policy.json" }],
+    })).toBe(1);
+  });
+
   it("counts JSON files at every depth, case-insensitively", () => {
     expect(countPolicyJsonFiles({
       tree: [

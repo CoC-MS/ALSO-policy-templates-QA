@@ -367,7 +367,6 @@ function App() {
                   <div>
                     <span>Pre-configured security policy templates. Ready to use.</span>
                     <p>Strengthen your Microsoft environments with expert-built templates at <b>zero cost.</b></p>
-                    <small>Templates are free. Required Microsoft licenses and add-ons are separate.</small>
                   </div>
                 </aside>
               )}

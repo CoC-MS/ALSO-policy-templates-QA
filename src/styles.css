@@ -229,10 +229,6 @@ h1 {
   line-height: 1.5;
 }
 
-.template-highlight small {
-  color: var(--text-muted);
-}
-
 .card-grid {
   display: grid;
   gap: 0.9rem;

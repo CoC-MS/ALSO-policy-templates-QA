@@ -1,7 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { countPolicyJsonFiles } from "./template-count.mjs";
+import { countRepositoryTemplates } from "./template-count.mjs";
 
 const owner = "CoC-MS";
 const repositoryNames = [
@@ -56,8 +56,8 @@ const repositories = repositoryNames.map((name) => {
       { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"], maxBuffer: 20 * 1024 * 1024 },
     ),
   );
-  const templateCount = countPolicyJsonFiles(tree);
-  console.log(`Synced ${name} (${metadata.topics.length} topics, ${templateCount} JSON templates).`);
+  const templateCount = countRepositoryTemplates(name, tree);
+  console.log(`Synced ${name} (${metadata.topics.length} topics, ${templateCount} templates).`);
 
   return {
     name,
