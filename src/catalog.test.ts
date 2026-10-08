@@ -290,7 +290,7 @@ describe("full-capability suite tier", () => {
       });
 
       it.each(defenderSuiteLicenseIds)(
-        "%s has notices only for AI Security, Purview, and both servers",
+        "%s has notices only for AI Security, Conditional Access, Purview, and both servers",
         (licenseId) => {
           for (const platform of platforms) {
             const limitedNotice = getLimitedExperienceNoteForLicenses(
@@ -299,6 +299,8 @@ describe("full-capability suite tier", () => {
             );
 
             if (platform.id === "ai-security") {
+              expect(limitedNotice?.message).toContain("Agent 365 license");
+            } else if (platform.id === "conditional-access") {
               expect(limitedNotice?.message).toContain("Agent 365 license");
             } else if (platform.id === "purview") {
               expect(limitedNotice?.message).toContain(
@@ -571,11 +573,13 @@ describe("full-capability suite tier", () => {
   });
 
   it.each(fullSuiteLicenseIds)(
-    "%s has no limited notice outside AI Security and Agent Security",
+    "%s has no limited notice outside AI Security, Agent Security, and Conditional Access",
     (licenseId) => {
       for (const platform of platforms.filter(
         (item) =>
-          item.id !== "ai-security" && item.id !== "agent-security",
+          item.id !== "ai-security" &&
+          item.id !== "agent-security" &&
+          item.id !== "conditional-access",
       )) {
         expect(
           getLimitedExperienceNoteForLicenses([licenseId], platform.id),
@@ -583,6 +587,40 @@ describe("full-capability suite tier", () => {
       }
     },
   );
+
+  it.each(fullSuiteLicenseIds)(
+    "%s requires Agent 365 for full Conditional Access",
+    (licenseId) => {
+      const note = getLimitedExperienceNoteForLicenses(
+        [licenseId],
+        "conditional-access",
+      );
+
+      expect(note?.title).toBe(
+        "Agent 365 license required for full Conditional Access experience",
+      );
+      expect(note?.message).toContain("add an Agent 365 license");
+      expect(note?.message).not.toContain("Microsoft Entra ID Plan 2");
+    },
+  );
+
+  it("marks Conditional Access limited for every eligible license except E7", () => {
+    for (const license of licenses.filter(
+      (candidate) => candidate.eligible && candidate.id !== "e7",
+    )) {
+      expect(
+        getLimitedExperienceNoteForLicenses(
+          [license.id],
+          "conditional-access",
+        ),
+        license.id,
+      ).toBeDefined();
+    }
+
+    expect(
+      getLimitedExperienceNoteForLicenses(["e7"], "conditional-access"),
+    ).toBeUndefined();
+  });
 
   it.each(fullSuiteLicenseIds)(
     "%s requires Agent 365 for full Agent Security",

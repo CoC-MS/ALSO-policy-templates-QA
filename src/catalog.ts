@@ -367,13 +367,16 @@ export function getLimitedExperienceNoteForLicenses(
       entraIdP2LicenseIds.has(licenseId),
     );
 
-    if (!needsEntraIdP2) {
-      return undefined;
+    if (needsEntraIdP2) {
+      return {
+        title: "Limited Conditional Access experience",
+        message: `With ${selectedNames}, add Microsoft Entra ID Plan 2 for risky user and risky sign-in policy templates. Microsoft Entra ID Plan 2 is also included with the Microsoft Defender Suite${usesFlwAddOns ? " FLW" : ""} add-on. An Agent 365 license is required for all Agent 365 policy templates.`,
+      };
     }
 
     return {
-      title: "Limited Conditional Access experience",
-      message: `With ${selectedNames}, add Microsoft Entra ID Plan 2 for risky user and risky sign-in policy templates. Microsoft Entra ID Plan 2 is also included with the Microsoft Defender Suite${usesFlwAddOns ? " FLW" : ""} add-on. An Agent 365 license is required for all Agent 365 policy templates.`,
+      title: "Agent 365 license required for full Conditional Access experience",
+      message: `With ${selectedNames}, add an Agent 365 license to unlock the full Conditional Access policy-template experience.`,
     };
   }
 
