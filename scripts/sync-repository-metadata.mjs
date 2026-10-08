@@ -1,7 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { countRepositoryTemplates } from "./template-count.mjs";
+import { countRepositoryTemplates, getPolicyJsonHashes, deduplicateRepositoryCounts } from "./template-count.mjs";
 
 const owner = "CoC-MS";
 const repositoryNames = [
@@ -27,7 +27,7 @@ try {
   if (error?.code !== "ENOENT") throw error;
 }
 
-const repositories = repositoryNames.map((name) => {
+const repositories = deduplicateRepositoryCounts(repositoryNames.map((name) => {
   const url = `https://github.com/${owner}/${name}`;
   let metadata;
   try {
@@ -65,9 +65,10 @@ const repositories = repositoryNames.map((name) => {
     description: metadata.description,
     topics: [...metadata.topics].sort(),
     templateCount,
+    templateHashes: name === "ALSO-Microsoft-Security-Purview" ? [] : getPolicyJsonHashes(tree),
     templateCountUpdatedAt: new Date().toISOString(),
   };
-});
+}));
 
 await mkdir(join(process.cwd(), "public"), { recursive: true });
 await writeFile(

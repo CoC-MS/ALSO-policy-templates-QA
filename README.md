@@ -11,6 +11,9 @@ unique linked repository, excluding files under Applications, Authentication
 Context (including AuthenticationContext), Groups, and NamedLocations folders. Counts
 refresh with the daily metadata sync; inaccessible repositories retain their
 last verified counts. No repository file contents are downloaded or published.
+Identical JSON files are counted only once across all repositories using Git
+content hashes. Formatting differences or different exported IDs produce distinct
+hashes; this is exact-content deduplication, not semantic policy comparison.
 The free-template message does not imply that Microsoft licenses are free.
 
 Purview contributes a fixed, user-confirmed count of 24 policy templates rather

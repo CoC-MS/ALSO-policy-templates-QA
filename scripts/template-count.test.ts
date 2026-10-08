@@ -1,7 +1,32 @@
 import { describe, expect, it } from "vitest";
-import { countPolicyJsonFiles, countRepositoryTemplates } from "./template-count.mjs";
+import { countPolicyJsonFiles, countRepositoryTemplates, getPolicyJsonHashes, deduplicateRepositoryCounts } from "./template-count.mjs";
 
 describe("policy JSON file count", () => {
+  it("deduplicates identical JSON content within a repository", () => {
+    expect(getPolicyJsonHashes({ tree: [
+      { type: "blob", path: "Basic/policy.json", sha: "same" },
+      { type: "blob", path: "Full/copy.json", sha: "same" },
+      { type: "blob", path: "Full/other.json", sha: "different" },
+      { type: "blob", path: "Groups/group.json", sha: "excluded" },
+    ] })).toEqual(["different", "same"]);
+  });
+
+  it("deduplicates across repositories and retains Purview's 24 templates", () => {
+    const result = deduplicateRepositoryCounts([
+      { name: "Windows", templateHashes: ["one", "one", "two"] },
+      { name: "AI", templateHashes: ["two", "three"] },
+      { name: "ALSO-Microsoft-Security-Purview", templateHashes: [] },
+    ]);
+    expect(result.map((repository) => repository.templateCount)).toEqual([2, 1, 24]);
+  });
+
+  it("refuses to publish a total without cached content hashes", () => {
+    expect(() => deduplicateRepositoryCounts([{ name: "Windows" }])).toThrow("Missing template hashes");
+    expect(() => getPolicyJsonHashes({ tree: [
+      { type: "blob", path: "policy.json" },
+    ] })).toThrow("Missing Git content hash");
+  });
+
   it("includes the specified 24 Purview templates even without JSON files", () => {
     expect(countRepositoryTemplates("ALSO-Microsoft-Security-Purview", {
       tree: [],
