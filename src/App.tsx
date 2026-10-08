@@ -17,6 +17,7 @@ import {
 import {
   filterPlatformsByTopics,
   getRepositoryMetadata,
+  getTotalTemplateCount,
   type RepositoryMetadata,
   type RepositoryMetadataIndex,
 } from "./repositoryMetadata";
@@ -139,6 +140,7 @@ function App() {
   >("loading");
   const eligibleLicenses = selectedLicenses.filter((license) => license.eligible);
   const eligibleLicenseIds = eligibleLicenses.map((license) => license.id);
+  const totalTemplateCount = getTotalTemplateCount(repositoryMetadata.repositories);
   const overviewPlatforms = filterPlatformsByTopics(
     platforms,
     repositoryMetadata.repositories,
@@ -359,6 +361,16 @@ function App() {
 
           {step === "license" && (
             <section aria-labelledby="main-title">
+              {metadataStatus === "ready" && totalTemplateCount !== undefined && (
+                <aside className="template-highlight" aria-label="Free security policy templates">
+                  <strong>{totalTemplateCount.toLocaleString()}+</strong>
+                  <div>
+                    <span>Pre-configured security policy templates. Ready to use.</span>
+                    <p>Strengthen your Microsoft environments with expert-built templates at <b>zero cost.</b></p>
+                    <small>Templates are free. Required Microsoft licenses and add-ons are separate.</small>
+                  </div>
+                </aside>
+              )}
               <div className="eyebrow">Find your security policy templates</div>
               <h1 id="main-title" tabIndex={-1}>Which Microsoft 365 licenses do you have today?</h1>
               <p className="intro">Select all your current licenses to see which ALSO security policy templates are available to your organization.</p>

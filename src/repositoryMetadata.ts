@@ -8,11 +8,35 @@ export interface RepositoryMetadata {
   url: string;
   description: string | null;
   topics: string[];
+  templateCount?: number;
+  templateCountUpdatedAt?: string;
 }
 
 export interface RepositoryMetadataIndex {
   generatedAt: string;
   repositories: RepositoryMetadata[];
+}
+
+export function getTotalTemplateCount(
+  repositories: readonly RepositoryMetadata[],
+): number | undefined {
+  const uniqueRepositories = new Map(
+    repositories.map((repository) => [repository.url, repository]),
+  );
+  if (uniqueRepositories.size === 0) return undefined;
+
+  let total = 0;
+  for (const repository of uniqueRepositories.values()) {
+    if (
+      repository.templateCount === undefined ||
+      !Number.isSafeInteger(repository.templateCount) ||
+      repository.templateCount < 0
+    ) {
+      return undefined;
+    }
+    total += repository.templateCount;
+  }
+  return total;
 }
 
 function normalize(value: string): string {

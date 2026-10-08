@@ -1,6 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
+import { countPolicyJsonFiles } from "./template-count.mjs";
 
 const owner = "CoC-MS";
 const repositoryNames = [
@@ -28,23 +29,16 @@ try {
 
 const repositories = repositoryNames.map((name) => {
   const url = `https://github.com/${owner}/${name}`;
-
+  let metadata;
   try {
-    const metadata = JSON.parse(
+    metadata = JSON.parse(
       execFileSync("gh", ["api", `repos/${owner}/${name}`], {
         encoding: "utf8",
         stdio: ["ignore", "pipe", "pipe"],
       }),
     );
-    console.log(`Synced ${name} (${metadata.topics.length} topics).`);
-
-    return {
-      name,
-      url,
-      description: metadata.description,
-      topics: [...metadata.topics].sort(),
-    };
-  } catch {
+  } catch (error) {
+    if (!String(error.stderr).includes("HTTP 404")) throw error;
     const cached = cachedRepositories.find(
       (repository) => repository.url === url,
     );
@@ -54,6 +48,25 @@ const repositories = repositoryNames.map((name) => {
     console.warn(`Using cached metadata for ${name}.`);
     return cached;
   }
+
+  const tree = JSON.parse(
+    execFileSync(
+      "gh",
+      ["api", `repos/${owner}/${name}/git/trees/${encodeURIComponent(metadata.default_branch)}?recursive=1`],
+      { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"], maxBuffer: 20 * 1024 * 1024 },
+    ),
+  );
+  const templateCount = countPolicyJsonFiles(tree);
+  console.log(`Synced ${name} (${metadata.topics.length} topics, ${templateCount} JSON templates).`);
+
+  return {
+    name,
+    url,
+    description: metadata.description,
+    topics: [...metadata.topics].sort(),
+    templateCount,
+    templateCountUpdatedAt: new Date().toISOString(),
+  };
 });
 
 await mkdir(join(process.cwd(), "public"), { recursive: true });

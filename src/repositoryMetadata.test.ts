@@ -3,6 +3,7 @@ import { getPlatform, platforms } from "./catalog";
 import {
   filterPlatformsByTopics,
   getRepositoryMetadata,
+  getTotalTemplateCount,
   type RepositoryMetadata,
 } from "./repositoryMetadata";
 
@@ -28,6 +29,19 @@ const repositories: RepositoryMetadata[] = [
 ];
 
 describe("repository topic metadata", () => {
+  it("totals unique repositories without double-counting shared routes", () => {
+    const first = { ...repositories[0], templateCount: 10 };
+    const second = { ...repositories[1], templateCount: 5 };
+    expect(getTotalTemplateCount([first, first, second])).toBe(15);
+  });
+
+  it("does not display a partial or invalid template total", () => {
+    expect(getTotalTemplateCount([])).toBeUndefined();
+    expect(getTotalTemplateCount(repositories)).toBeUndefined();
+    expect(getTotalTemplateCount([{ ...repositories[0], templateCount: -1 }])).toBeUndefined();
+    expect(getTotalTemplateCount([{ ...repositories[0], templateCount: 1.5 }])).toBeUndefined();
+  });
+
   it("looks up metadata by repository URL", () => {
     expect(
       getRepositoryMetadata(
