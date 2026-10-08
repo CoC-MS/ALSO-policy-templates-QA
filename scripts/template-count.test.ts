@@ -34,6 +34,8 @@ describe("policy JSON file count", () => {
         { type: "blob", path: "authentication-context/policy.json" },
         { type: "blob", path: "CA/namedlocations/policy.json" },
         { type: "blob", path: "Named Locations/policy.json" },
+        { type: "blob", path: "Groups/group.json" },
+        { type: "blob", path: "CA/groups/nested/group.JSON" },
         { type: "blob", path: "ConditionalAccess/policy.json" },
       ],
     })).toBe(1);
@@ -44,8 +46,10 @@ describe("policy JSON file count", () => {
       tree: [
         { type: "blob", path: "Applications.json" },
         { type: "blob", path: "ApplicationsPolicy/policy.json" },
+        { type: "blob", path: "Groups.json" },
+        { type: "blob", path: "GroupsPolicy/policy.json" },
       ],
-    })).toBe(2);
+    })).toBe(4);
   });
 
   it("rejects incomplete trees rather than publishing an inaccurate count", () => {

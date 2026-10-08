@@ -8,7 +8,7 @@ An interactive guide that combines a customer's Microsoft 365 licenses to identi
 
 The home-page template total counts `.json` files on the default branch of each
 unique linked repository, excluding files under Applications, Authentication
-Context (including AuthenticationContext), and NamedLocations folders. Counts
+Context (including AuthenticationContext), Groups, and NamedLocations folders. Counts
 refresh with the daily metadata sync; inaccessible repositories retain their
 last verified counts. No repository file contents are downloaded or published.
 The free-template message does not imply that Microsoft licenses are free.

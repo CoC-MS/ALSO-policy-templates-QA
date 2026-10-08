@@ -1,6 +1,7 @@
 const excludedFolders = new Set([
   "applications",
   "authenticationcontext",
+  "groups",
   "namedlocations",
 ]);
 
